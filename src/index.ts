@@ -4,6 +4,7 @@ class Player {
   id: Number;
   name: String;
   ELO: Number;
+  device: String;
   online: Boolean;
   opponent: String;
   opponentid: Number;
@@ -16,6 +17,7 @@ class Player {
     this.name = data.attributes["user-name"];
     this.ELO = data.attributes.elo;
     this.online = false;
+    this.device = "";
     this.opponent = "";
     this.opponentid = 0;
     this.opponentELO = 0;
@@ -80,6 +82,7 @@ async function fetch_players() {
       );
       if (users.length > 0) {
         player.online = true;
+        player.device = users[0].Device;
       }
     }
 
@@ -137,7 +140,9 @@ async function main() {
       player.id
     }" target="_blank">${player.id}</a></th><th>${player.name}</th><th>${
       player.ELO
-    }</th><th>${player.online ? "✔️" : "❌"}</th><th>${opponent_str}</th>`;
+    }</th><th>${
+      player.online ? "✔️(" + player.device + ")" : "❌"
+    }</th><th>${opponent_str}</th></tr>`;
   }
   content += `</table>`;
   output(content);

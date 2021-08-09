@@ -15,6 +15,7 @@ class Player {
         this.name = data.attributes["user-name"];
         this.ELO = data.attributes.elo;
         this.online = false;
+        this.device = "";
         this.opponent = "";
         this.opponentid = 0;
         this.opponentELO = 0;
@@ -64,6 +65,7 @@ function fetch_players() {
                 let users = json.OnlineUses.filter((onlinePlayer) => onlinePlayer.Id === player.id.toString());
                 if (users.length > 0) {
                     player.online = true;
+                    player.device = users[0].Device;
                 }
             }
             players.forEach((player) => {
@@ -109,7 +111,7 @@ function main() {
             if (player.opponent !== "") {
                 opponent_str = `<a href="https://www.elevenvr.net/eleven/${player.id}" target='_blank'>${player.opponent}</a> (${player.opponentELO}) <a href="https://www.elevenvr.net/matchup/${player.id}/${player.opponentid}" target='_blank'>⚔️</a></th></tr>`;
             }
-            content += `<tr><th><a href="https://www.elevenvr.net/eleven/${player.id}" target="_blank">${player.id}</a></th><th>${player.name}</th><th>${player.ELO}</th><th>${player.online ? "✔️" : "❌"}</th><th>${opponent_str}</th>`;
+            content += `<tr><th><a href="https://www.elevenvr.net/eleven/${player.id}" target="_blank">${player.id}</a></th><th>${player.name}</th><th>${player.ELO}</th><th>${player.online ? "✔️(" + player.device + ")" : "❌"}</th><th>${opponent_str}</th></tr>`;
         }
         content += `</table>`;
         output(content);

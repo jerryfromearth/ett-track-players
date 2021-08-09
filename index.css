@@ -1,0 +1,15 @@
+html,
+body,
+input,
+textarea,
+select,
+button {
+  border-color: #736b5e;
+  color: #e8e6e3;
+
+  background-color: #202324;
+}
+
+a {
+  color: #3391ff;
+}
