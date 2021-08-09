@@ -1,0 +1,63 @@
+{
+  "data": {
+    "id": "2455309",
+    "type": "matches",
+    "attributes": {
+      "ranked": true,
+      "number-of-rounds": 3,
+      "state": 1,
+      "winning-team": 0,
+      "losing-team": 1,
+      "created-at": "2020-12-08T22:10:14.704Z",
+      "elo-change": 16.0,
+      "home-elo-avg": 1500.0,
+      "away-elo-avg": 1500.0,
+      "rounds": [
+        {
+          "id": "5501410",
+          "away-score": 10,
+          "home-score": 12,
+          "round-number": 0,
+          "state": 0,
+          "winner": 0,
+          "created-at": "2020-12-08T22:12:10.762Z"
+        },
+        {
+          "id": "5501321",
+          "away-score": 5,
+          "home-score": 11,
+          "round-number": 0,
+          "state": 0,
+          "winner": 0,
+          "created-at": "2020-12-08T22:10:14.704Z"
+        }
+      ],
+      "players": [
+        {
+          "id": "4008",
+          "username": "[w]SolidSlime",
+          "elo": 1500.0,
+          "rank": 776,
+          "wins": 642,
+          "losses": 926,
+          "last-online": "2021-08-08T20:12:16.248Z",
+          "team": 0,
+          "current-elo": 2242.0
+        },
+        {
+          "id": "177692",
+          "username": "FREDEY~DK",
+          "elo": 1500.0,
+          "rank": 11243,
+          "wins": 214,
+          "losses": 198,
+          "last-online": "2021-07-21T17:30:24.526Z",
+          "team": 1,
+          "current-elo": 1681.5
+        }
+      ],
+      "home-score": 2,
+      "away-score": 0
+    }
+  }
+}
