@@ -50,7 +50,7 @@ async function fetch_players() {
   }
 
   let online_promise = fetch(
-    "http://elevenlogcollector-env.js6z6tixhb.us-west-2.elasticbeanstalk.com/ElevenServerLiteSnapshot"
+    "https://api.codetabs.com/v1/proxy/?quest=http://elevenlogcollector-env.js6z6tixhb.us-west-2.elasticbeanstalk.com/ElevenServerLiteSnapshot"
   );
 
   for (const promise of promises) {
