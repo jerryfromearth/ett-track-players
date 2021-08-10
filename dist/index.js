@@ -104,14 +104,14 @@ function main() {
         yield fetch_players();
         let content = "";
         content += `<table id="players" class="table-sort table-sort-search" style="width: 100%; position: static;">`;
-        content += `<tr><th>Id</th><th>name</th><th>ELO</th><th>online</th><th>opponent</th></tr>`;
+        content += `<tr><th>Links</th><th>Id</th><th>name</th><th>ELO</th><th>online</th><th>opponent</th></tr>`;
         for (const player of players) {
             console.log(JSON.stringify(player, null, 2));
             let opponent_str = "";
             if (player.opponent !== "") {
                 opponent_str = `<a href="https://www.elevenvr.net/eleven/${player.id}" target='_blank'>${player.opponent}</a> (${player.opponentELO}) <a href="https://www.elevenvr.net/matchup/${player.id}/${player.opponentid}" target='_blank'>⚔️</a></th></tr>`;
             }
-            content += `<tr><th><a href="https://www.elevenvr.net/eleven/${player.id}" target="_blank">${player.id}</a></th><th>${player.name}</th><th>${player.ELO}</th><th>${player.online ? "✔️(" + player.device + ")" : "❌"}</th><th>${opponent_str}</th></tr>`;
+            content += `<tr><th><a href="https://beta.11-stats.com/stats/${player.id}" target="_blank">📈</a></th><th><a href="https://www.elevenvr.net/eleven/${player.id}" target="_blank">${player.id}</a></th><th>${player.name}</th><th>${player.ELO}</th><th>${player.online ? "✔️(" + player.device + ")" : "❌"}</th><th>${opponent_str}</th></tr>`;
         }
         content += `</table>`;
         output(content);
