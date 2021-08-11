@@ -24,7 +24,7 @@ class Player {
 const playerIds_tracked = [
     4008, 42092, 45899, 186338, 74829, 144393, 487596, 488310, 586869, 366274,
     378113, 426378, 484129, 486906, 494352, 498963, 504586, 504610, 558168,
-    583429, 490463, 518674, 500126,
+    583429, 490463, 518674, 379428, 500126, 485512,
 ];
 function init() {
     players = [];
@@ -117,7 +117,7 @@ function main() {
         output(content);
     });
 }
-const refreshInterval = 30;
+const refreshInterval = 60;
 let seconds = refreshInterval;
 function updateTimer() {
     console.log("time");
