@@ -4,6 +4,7 @@ class Player {
   id: Number;
   name: String;
   ELO: Number;
+  rank: Number;
   device: String;
   online: Boolean;
   opponent: String;
@@ -16,6 +17,7 @@ class Player {
     this.id = data.id;
     this.name = data.attributes["user-name"];
     this.ELO = data.attributes.elo;
+    this.rank = data.attributes.rank;
     this.online = false;
     this.device = "";
     this.opponent = "";
@@ -138,10 +140,12 @@ async function main() {
     }
     content += `<tr><th><a href="https://beta.11-stats.com/stats/${
       player.id
-    }" target="_blank">📈</a></th><th><a href="https://www.elevenvr.net/eleven/${
+    }/statistics" target="_blank">📈</a></th><th><a href="https://www.elevenvr.net/eleven/${
       player.id
     }" target="_blank">${player.id}</a></th><th>${player.name}</th><th>${
       player.ELO
+    }${
+      player.rank <= 1000 ? " (#" + player.rank.toString() + ")" : ""
     }</th><th>${
       player.online ? "✔️(" + player.device + ")" : "❌"
     }</th><th>${opponent_str}</th></tr>`;

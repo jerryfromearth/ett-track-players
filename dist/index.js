@@ -14,6 +14,7 @@ class Player {
         this.id = data.id;
         this.name = data.attributes["user-name"];
         this.ELO = data.attributes.elo;
+        this.rank = data.attributes.rank;
         this.online = false;
         this.device = "";
         this.opponent = "";
@@ -111,7 +112,7 @@ function main() {
             if (player.opponent !== "") {
                 opponent_str = `<a href="https://www.elevenvr.net/eleven/${player.id}" target='_blank'>${player.opponent}</a> (${player.opponentELO}) <a href="https://www.elevenvr.net/matchup/${player.id}/${player.opponentid}" target='_blank'>⚔️</a></th></tr>`;
             }
-            content += `<tr><th><a href="https://beta.11-stats.com/stats/${player.id}" target="_blank">📈</a></th><th><a href="https://www.elevenvr.net/eleven/${player.id}" target="_blank">${player.id}</a></th><th>${player.name}</th><th>${player.ELO}</th><th>${player.online ? "✔️(" + player.device + ")" : "❌"}</th><th>${opponent_str}</th></tr>`;
+            content += `<tr><th><a href="https://beta.11-stats.com/stats/${player.id}/statistics" target="_blank">📈</a></th><th><a href="https://www.elevenvr.net/eleven/${player.id}" target="_blank">${player.id}</a></th><th>${player.name}</th><th>${player.ELO}${player.rank <= 1000 ? " (#" + player.rank.toString() + ")" : ""}</th><th>${player.online ? "✔️(" + player.device + ")" : "❌"}</th><th>${opponent_str}</th></tr>`;
         }
         content += `</table>`;
         output(content);
