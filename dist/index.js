@@ -27,11 +27,10 @@ function init() {
     players = [];
     let element = document.getElementById("app");
     element.innerHTML = "";
-}
-function output(text) {
-    console.log(text);
-    let element = document.getElementById("app");
-    element.innerHTML += text.toString() + "\n";
+    let table = document.getElementById("players");
+    let rows = table.rows;
+    while (rows.length > 1)
+        table.deleteRow(1);
 }
 let players = [];
 function fetch_players() {
@@ -116,7 +115,7 @@ function main() {
         }
     });
 }
-const refreshInterval = 60;
+const refreshInterval = 5;
 let seconds = refreshInterval;
 function updateTimer() {
     console.log("time");
@@ -129,6 +128,7 @@ function updateTimer() {
         seconds -= 1;
     }
 }
+init();
 main();
 setInterval(main, refreshInterval * 1000);
 setInterval(updateTimer, 1000);

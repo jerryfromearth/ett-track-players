@@ -1,5 +1,6 @@
 //import fetch from "node-fetch"; // only for local nodejs
 
+//import $ from "jquery";
 class Player {
   id: Number;
   name: String;
@@ -28,15 +29,19 @@ const playerIds_tracked = [
   583429, 490463, 518674, 379428, 485512, 487820, 487629, 492317,
 ];
 
+//
 function init() {
   players = [];
   let element = document.getElementById("app")! as HTMLDivElement;
   element.innerHTML = "";
-}
-function output(text: String) {
-  console.log(text);
-  let element = document.getElementById("app")! as HTMLDivElement;
-  element.innerHTML += text.toString() + "\n";
+
+  let table = document.getElementById("players") as HTMLTableElement;
+  let rows = table.rows;
+  while (rows.length > 1) table.deleteRow(1);
+
+  //$("#players").css("color", "red");
+  // element = <HTMLInputElement>$("#players")[0];
+  // element.css
 }
 
 let players: Player[] = [];
@@ -148,7 +153,7 @@ async function main() {
   }
 }
 
-const refreshInterval = 60; // seconds
+const refreshInterval = 5; // seconds
 let seconds = refreshInterval;
 function updateTimer() {
   console.log("time");
@@ -160,6 +165,9 @@ function updateTimer() {
     seconds -= 1;
   }
 }
+
+init();
+
 main();
 setInterval(main, refreshInterval * 1000);
 
