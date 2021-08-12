@@ -115,7 +115,7 @@ function main() {
         }
     });
 }
-const refreshInterval = 5;
+const refreshInterval = 60;
 let seconds = refreshInterval;
 function updateTimer() {
     console.log("time");

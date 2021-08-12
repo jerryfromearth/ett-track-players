@@ -153,7 +153,7 @@ async function main() {
   }
 }
 
-const refreshInterval = 5; // seconds
+const refreshInterval = 60; // seconds
 let seconds = refreshInterval;
 function updateTimer() {
   console.log("time");
