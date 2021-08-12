@@ -5,11 +5,11 @@ class Player {
   name: String;
   ELO: Number;
   rank: Number;
-  device: String;
   online: Boolean;
-  opponent: String;
-  opponentid: Number;
-  opponentELO: Number;
+  device?: String;
+  opponent?: String;
+  opponentid?: Number;
+  opponentELO?: Number;
 
   constructor(json: any) {
     let data = json.data;
@@ -19,10 +19,6 @@ class Player {
     this.ELO = data.attributes.elo;
     this.rank = data.attributes.rank;
     this.online = false;
-    this.device = "";
-    this.opponent = "";
-    this.opponentid = 0;
-    this.opponentELO = 0;
   }
 }
 
@@ -135,7 +131,7 @@ async function main() {
   for (const player of players) {
     console.log(JSON.stringify(player, null, 2));
     let opponent_str = "";
-    if (player.opponent !== "") {
+    if (player.opponent !== undefined) {
       opponent_str = `<a href="https://www.elevenvr.net/eleven/${player.id}" target='_blank'>${player.opponent}</a> (${player.opponentELO}) <a href="https://www.elevenvr.net/matchup/${player.id}/${player.opponentid}" target='_blank'>⚔️</a></th></tr>`;
     }
     content += `<tr><th><a href="https://beta.11-stats.com/stats/${
