@@ -105,7 +105,7 @@ function main() {
             let row = table.insertRow(-1);
             row.insertCell().innerHTML = `<a href="https://beta.11-stats.com/stats/${player.id}/statistics" target="_blank">📈</a>`;
             row.insertCell().innerHTML = `<a href="https://www.elevenvr.net/eleven/${player.id}" target="_blank">${player.id}</a>`;
-            row.insertCell().innerHTML = `${player.id === 500126 ? "🤡" : ""}${player.name}`;
+            row.insertCell().innerHTML = `${player.id === 500126 ? "(*)🤡" : ""}${player.name}`;
             row.insertCell().innerHTML = `${player.ELO}${player.rank <= 1000 ? " (#" + player.rank.toString() + ")" : ""}`;
             row.insertCell().innerHTML = `${player.online ? "✔️(" + player.device + ")" : "❌"}`;
             let opponent_str = "";
