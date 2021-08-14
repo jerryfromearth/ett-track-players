@@ -22,7 +22,7 @@ const playerIds_tracked = [
     4008, 42092, 45899, 186338, 74829, 144393, 487596, 488310, 586869, 366274,
     378113, 426378, 484129, 486906, 494352, 498963, 504586, 504610, 558168,
     583429, 490463, 518674, 379428, 485512, 487820, 487629, 492317, 113125,
-    596993,
+    596993, 500126, 487314,
 ];
 function init() {
     players = [];
@@ -105,7 +105,7 @@ function main() {
             let row = table.insertRow(-1);
             row.insertCell().innerHTML = `<a href="https://beta.11-stats.com/stats/${player.id}/statistics" target="_blank">📈</a>`;
             row.insertCell().innerHTML = `<a href="https://www.elevenvr.net/eleven/${player.id}" target="_blank">${player.id}</a>`;
-            row.insertCell().innerHTML = `${player.name}`;
+            row.insertCell().innerHTML = `${player.id === 500126 ? "🤡" : ""}${player.name}`;
             row.insertCell().innerHTML = `${player.ELO}${player.rank <= 1000 ? " (#" + player.rank.toString() + ")" : ""}`;
             row.insertCell().innerHTML = `${player.online ? "✔️(" + player.device + ")" : "❌"}`;
             let opponent_str = "";
