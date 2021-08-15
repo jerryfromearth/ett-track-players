@@ -225,7 +225,7 @@ async function loadAndRender() {
   postLoading();
 }
 
-const refreshInterval = 5; // seconds
+const refreshInterval = 60; // seconds
 let seconds = refreshInterval;
 
 function updateTimerInfo() {

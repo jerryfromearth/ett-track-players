@@ -166,7 +166,7 @@ function loadAndRender() {
         postLoading();
     });
 }
-const refreshInterval = 5;
+const refreshInterval = 60;
 let seconds = refreshInterval;
 function updateTimerInfo() {
     updateInfo(`Updating in ${seconds} seconds`);
