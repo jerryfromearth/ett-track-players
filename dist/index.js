@@ -28,14 +28,46 @@ class Player {
         this.rank = (_c = data === null || data === void 0 ? void 0 : data.attributes) === null || _c === void 0 ? void 0 : _c.rank;
         this.changed = true;
     }
+    fillOnlineInfo(json) {
+        let users = json.OnlineUses.filter((onlinePlayer) => onlinePlayer.Id === this.id.toString());
+        if (users.length > 0) {
+            this.online = true;
+            this.device = users[0].Device;
+        }
+        else {
+            this.online = false;
+            this.device = undefined;
+        }
+        let usersInRoom = json.UsersInRooms.filter((userInRoom) => userInRoom.Id === this.id.toString());
+        console.log(`User ${this.name} is ${usersInRoom.length == 0 ? "NOT" : ""} in room`);
+        let rooms = json.Rooms.filter((room) => {
+            let roomplayers = room.Players;
+            for (let i = 0; i < roomplayers.length; i++) {
+                if (roomplayers[i].Id === this.id.toString()) {
+                    return true;
+                }
+            }
+            return false;
+        });
+        if (rooms.length > 0) {
+            let room = rooms[0];
+            room.Players.forEach((roomplayers) => {
+                if (roomplayers.Id !== this.id.toString()) {
+                    this.opponent = roomplayers.UserName;
+                    this.opponentELO = roomplayers.ELO;
+                    this.opponentid = roomplayers.Id;
+                }
+            });
+        }
+        else {
+            this.opponent = undefined;
+            this.opponentELO = undefined;
+            this.opponentid = undefined;
+        }
+    }
 }
 let players = [];
-const playerIds_tracked = [
-    4008, 42092, 45899, 186338, 74829, 144393, 487596, 488310, 586869, 366274,
-    378113, 426378, 484129, 486906, 494352, 498963, 504586, 504610, 558168,
-    583429, 490463, 518674, 379428, 485512, 487820, 487629, 492317, 113125,
-    596993, 500126, 487314,
-];
+const playerIds_tracked = [4008];
 function updateInfo(info) {
     let element = document.getElementById("info");
     element.innerHTML = info.toString();
@@ -73,37 +105,10 @@ function loadPlayersData() {
         try {
             let online_response = yield online_promise;
             let json = yield online_response.json();
-            console.log(`Received online info`);
             for (const player of players) {
-                let users = json.OnlineUses.filter((onlinePlayer) => onlinePlayer.Id === player.id.toString());
-                if (users.length > 0) {
-                    player.online = true;
-                    player.device = users[0].Device;
-                }
+                player.fillOnlineInfo(json);
             }
-            players.forEach((player) => {
-                let usersInRoom = json.UsersInRooms.filter((userInRoom) => userInRoom.Id === player.id.toString());
-                console.log(`User ${player.name} is ${usersInRoom.length == 0 ? "NOT" : ""} in room`);
-                let rooms = json.Rooms.filter((room) => {
-                    let roomplayers = room.Players;
-                    for (let i = 0; i < roomplayers.length; i++) {
-                        if (roomplayers[i].Id === player.id.toString()) {
-                            return true;
-                        }
-                    }
-                    return false;
-                });
-                if (rooms.length > 0) {
-                    let room = rooms[0];
-                    room.Players.forEach((roomplayers) => {
-                        if (roomplayers.Id !== player.id.toString()) {
-                            player.opponent = roomplayers.UserName;
-                            player.opponentELO = roomplayers.ELO;
-                            player.opponentid = roomplayers.Id;
-                        }
-                    });
-                }
-            });
+            console.log(`Received online info`);
         }
         catch (err) {
             console.error(err);
@@ -156,7 +161,7 @@ function loadAndRender() {
         postLoading();
     });
 }
-const refreshInterval = 60;
+const refreshInterval = 5;
 let seconds = refreshInterval;
 function updateTimerInfo() {
     updateInfo(`Updating in ${seconds} seconds`);
