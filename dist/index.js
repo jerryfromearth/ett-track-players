@@ -67,7 +67,12 @@ class Player {
     }
 }
 let players = [];
-const playerIds_tracked = [4008];
+const playerIds_tracked = [
+    4008, 42092, 45899, 186338, 74829, 144393, 487596, 488310, 586869, 366274,
+    378113, 426378, 484129, 486906, 494352, 498963, 504586, 504610, 558168,
+    583429, 490463, 518674, 379428, 485512, 487820, 487629, 492317, 113125,
+    596993, 500126, 487314,
+];
 function updateInfo(info) {
     let element = document.getElementById("info");
     element.innerHTML = info.toString();
