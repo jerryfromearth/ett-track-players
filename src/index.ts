@@ -1,27 +1,41 @@
 //import fetch from "node-fetch"; // only for local nodejs
 
 //import $ from "jquery";
+
+const cellsTemplate = ["links", "id", "name", "elo", "online", "opponent"];
 class Player {
   id: Number;
   name: String;
   ELO: Number;
   rank: Number;
-  online: Boolean;
+  online?: Boolean;
   device?: String;
   opponent?: String;
   opponentid?: Number;
   opponentELO?: Number;
+  changed?: boolean;
 
   constructor(json: any) {
     let data = json.data;
 
-    this.id = data.id;
-    this.name = data.attributes["user-name"];
-    this.ELO = data.attributes.elo;
-    this.rank = data.attributes.rank;
-    this.online = false;
+    this.id = parseInt(data.id);
+    this.name = data?.attributes?.["user-name"];
+    this.ELO = data?.attributes?.elo;
+    this.rank = data?.attributes?.rank;
+    this.changed = true;
+  }
+
+  fillName(json: any) {
+    let data = json.data;
+    this.id = parseInt(data.id);
+    this.name = data?.attributes?.["user-name"];
+    this.ELO = data?.attributes?.elo;
+    this.rank = data?.attributes?.rank;
+    this.changed = true;
   }
 }
+
+let players: Player[] = [];
 
 const playerIds_tracked = [
   4008, 42092, 45899, 186338, 74829, 144393, 487596, 488310, 586869, 366274,
@@ -30,23 +44,22 @@ const playerIds_tracked = [
   596993, 500126, 487314,
 ];
 
+function updateInfo(info: String) {
+  let element = document.getElementById("info")! as HTMLDivElement;
+  element.innerHTML = info.toString();
+}
 //
 function init() {
   players = [];
-  let element = document.getElementById("app")! as HTMLDivElement;
-  element.innerHTML = "";
+  updateInfo("");
 
-  let table = document.getElementById("players") as HTMLTableElement;
-  let rows = table.rows;
-  while (rows.length > 1) table.deleteRow(1);
-
-  //$("#players").css("color", "red");
-  // element = <HTMLInputElement>$("#players")[0];
-  // element.css
+  for (let playerId of playerIds_tracked) {
+    let player = new Player({ data: { id: playerId.toString() } });
+    players.push(player);
+  }
 }
 
-let players: Player[] = [];
-async function fetch_players() {
+async function loadPlayersData() {
   console.log("Fetching these users:");
   let promises: Promise<Response>[] = [];
   for (const id_tracked of playerIds_tracked) {
@@ -63,11 +76,14 @@ async function fetch_players() {
     try {
       let response = await promise;
       let json = await response.json();
-      let player = new Player(json);
-      players.push(player);
-      console.log(player.name);
+      let player = players.filter(
+        (player) => player.id.toString() === json.data.id
+      )[0];
+      player.fillName(json);
+      console.log(`Received ${player.name} account info`);
     } catch (err) {
       console.error(err);
+      updateInfo(`Error: Failed to fetch player info. ${err}`);
     }
   }
 
@@ -80,6 +96,7 @@ async function fetch_players() {
   try {
     let online_response = await online_promise;
     let json = await online_response.json();
+    console.log(`Received online info`);
     for (const player of players) {
       let users = json.OnlineUses.filter(
         (onlinePlayer: any) => onlinePlayer.Id === player.id.toString()
@@ -96,10 +113,9 @@ async function fetch_players() {
         (userInRoom: any) => userInRoom.Id === player.id.toString()
       );
       console.log(
-        `User ${player.name} is ${usersInRoom.length == 0 ? "NOT" : ""}in room`
+        `User ${player.name} is ${usersInRoom.length == 0 ? "NOT" : ""} in room`
       );
 
-      console.log("Room:");
       let rooms = json.Rooms.filter((room: any) => {
         let roomplayers = room.Players;
         for (let i = 0; i < roomplayers.length; i++) {
@@ -123,28 +139,47 @@ async function fetch_players() {
     });
   } catch (err) {
     console.error(err);
+    updateInfo(`Error: Failed to fetch live snapshot. ${err}`);
   }
 }
 
-async function main() {
-  init();
-  await fetch_players();
+function renderPlayersData() {
+  // re-render players
+  let shouldCreateRows = false;
+  let table = document.getElementById("players") as HTMLTableElement;
+  if (table.rows.length == 1) {
+    shouldCreateRows = true;
+  }
 
-  // output players
-  for (const player of players) {
-    console.log(JSON.stringify(player, null, 2));
+  for (let playerId = 0; playerId < players.length; playerId++) {
+    let player = players[playerId];
+    //console.log(JSON.stringify(player, null, 2));
 
     let table = document.getElementById("players") as HTMLTableElement;
-    let row = table.insertRow(-1);
-    row.insertCell().innerHTML = `<a href="https://beta.11-stats.com/stats/${player.id}/statistics" target="_blank">📈</a>`;
-    row.insertCell().innerHTML = `<a href="https://www.elevenvr.net/eleven/${player.id}" target="_blank">${player.id}</a>`;
-    row.insertCell().innerHTML = `${player.id === 500126 ? "(*)🤡" : ""}${
-      player.name
+    let row: HTMLTableRowElement;
+    if (shouldCreateRows) {
+      row = table.insertRow(-1);
+      for (let cellId = 0; cellId < cellsTemplate.length; cellId++) {
+        row.insertCell();
+      }
+    } else row = table.rows[playerId + 1]; // first row is header
+
+    // Add some effects for changed cells
+    // if (player.changed == true) {
+    //   $(`#players tbody tr:nth-child(${playerId + 2})`).addClass("loading");
+    // } else {
+    //   $(`#players tbody tr:nth-child(${playerId + 2})`).removeClass("loading");
+    // }
+
+    row.cells[0].innerHTML = `<a href="https://beta.11-stats.com/stats/${player.id}/statistics" target="_blank">📈</a>`;
+    row.cells[1].innerHTML = `<a href="https://www.elevenvr.net/eleven/${player.id}" target="_blank">${player.id}</a>`;
+    row.cells[2].innerHTML = `${player.name}${
+      player.id === 500126 ? "（教官)" : ""
     }`;
-    row.insertCell().innerHTML = `${player.ELO}${
+    row.cells[3].innerHTML = `${player.ELO}${
       player.rank <= 1000 ? " (#" + player.rank.toString() + ")" : ""
     }`;
-    row.insertCell().innerHTML = `${
+    row.cells[4].innerHTML = `${
       player.online ? "✔️(" + player.device + ")" : "❌"
     }`;
 
@@ -152,16 +187,39 @@ async function main() {
     if (player.opponent !== undefined) {
       opponent_str = `<a href="https://www.elevenvr.net/eleven/${player.id}" target='_blank'>${player.opponent}</a> (${player.opponentELO}) <a href="https://www.elevenvr.net/matchup/${player.id}/${player.opponentid}" target='_blank'>⚔️</a></th></tr>`;
     }
-    row.insertCell().innerHTML = `${opponent_str}`;
+    row.cells[5].innerHTML = `${opponent_str}`;
+
+    player.changed = false;
   }
+}
+
+function preLoading() {
+  updateInfo(`Loading...`);
+  // $("#players tbody td:nth-child(3)").fadeOut();
+  // $("#players tbody td:nth-child(4)").fadeOut();
+  // $("#players tbody td:nth-child(5)").fadeOut();
+}
+
+function postLoading() {
+  updateInfo(`Done`);
+  // $("#players tbody td:nth-child(3)").fadeIn();
+  // $("#players tbody td:nth-child(4)").fadeIn();
+  // $("#players tbody td:nth-child(5)").fadeIn();
+}
+async function loadAndRender() {
+  preLoading();
+
+  await loadPlayersData();
+
+  renderPlayersData();
+  postLoading();
 }
 
 const refreshInterval = 60; // seconds
 let seconds = refreshInterval;
-function updateTimer() {
-  console.log("time");
-  let element = document.getElementById("counter")! as HTMLDivElement;
-  element.innerText = seconds.toString();
+
+function updateTimerInfo() {
+  updateInfo(`Updating in ${seconds} seconds`);
   if (seconds == 1) {
     seconds = refreshInterval;
   } else {
@@ -169,9 +227,12 @@ function updateTimer() {
   }
 }
 
+function main() {
+  loadAndRender();
+  setInterval(loadAndRender, refreshInterval * 1000);
+
+  setInterval(updateTimerInfo, 1000);
+}
+
 init();
-
 main();
-setInterval(main, refreshInterval * 1000);
-
-setInterval(updateTimer, 1000);
