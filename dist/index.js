@@ -17,7 +17,6 @@ class Player {
         this.name = (_a = data === null || data === void 0 ? void 0 : data.attributes) === null || _a === void 0 ? void 0 : _a["user-name"];
         this.ELO = (_b = data === null || data === void 0 ? void 0 : data.attributes) === null || _b === void 0 ? void 0 : _b.elo;
         this.rank = (_c = data === null || data === void 0 ? void 0 : data.attributes) === null || _c === void 0 ? void 0 : _c.rank;
-        this.changed = true;
     }
     fillName(json) {
         var _a, _b, _c;
@@ -26,7 +25,6 @@ class Player {
         this.name = (_a = data === null || data === void 0 ? void 0 : data.attributes) === null || _a === void 0 ? void 0 : _a["user-name"];
         this.ELO = (_b = data === null || data === void 0 ? void 0 : data.attributes) === null || _b === void 0 ? void 0 : _b.elo;
         this.rank = (_c = data === null || data === void 0 ? void 0 : data.attributes) === null || _c === void 0 ? void 0 : _c.rank;
-        this.changed = true;
     }
     fillOnlineInfo(json) {
         let users = json.OnlineUses.filter((onlinePlayer) => onlinePlayer.Id === this.id.toString());
@@ -121,14 +119,26 @@ function loadPlayersData() {
         }
     });
 }
-function renderPlayersData() {
+function renderPlayersData(playersOld, players) {
     let shouldCreateRows = false;
     let table = document.getElementById("players");
     if (table.rows.length == 1) {
         shouldCreateRows = true;
     }
     for (let playerId = 0; playerId < players.length; playerId++) {
+        let playerOld = playersOld[playerId];
         let player = players[playerId];
+        let changed = false;
+        let stringOld = JSON.stringify(playerOld);
+        let stringNew = JSON.stringify(player);
+        if (stringOld.localeCompare(stringNew) === 0)
+            changed = false;
+        else
+            changed = true;
+        console.log(`player ${player.name} has ${changed ? "" : "NOT"} changed!`);
+        console.log(stringOld);
+        console.log(stringNew);
+        $(`#players tbody tr:nth-child(${playerId + 2})`).removeClass("loading");
         let table = document.getElementById("players");
         let row;
         if (shouldCreateRows) {
@@ -139,17 +149,34 @@ function renderPlayersData() {
         }
         else
             row = table.rows[playerId + 1];
+        if (changed == true && shouldCreateRows === false) {
+            $(`#players tbody tr:nth-child(${playerId + 2})`).addClass("loading");
+            $(`#players tbody tr:nth-child(${playerId + 2})`)
+                .fadeOut(100)
+                .fadeIn(100)
+                .fadeOut(100)
+                .fadeIn(100);
+        }
         row.cells[0].innerHTML = `<a href="https://beta.11-stats.com/stats/${player.id}/statistics" target="_blank">📈</a>`;
         row.cells[1].innerHTML = `<a href="https://www.elevenvr.net/eleven/${player.id}" target="_blank">${player.id}</a>`;
-        row.cells[2].innerHTML = `${player.name}${player.id === 500126 ? "（教官)" : ""}`;
-        row.cells[3].innerHTML = `${player.ELO}${player.rank <= 1000 ? " (#" + player.rank.toString() + ")" : ""}`;
-        row.cells[4].innerHTML = `${player.online ? "✔️(" + player.device + ")" : "❌"}`;
+        row.cells[2].innerHTML =
+            player.name === undefined
+                ? "⌛"
+                : `${player.name}${player.id === 500126 ? "（教官)" : ""}`;
+        row.cells[3].innerHTML =
+            player.ELO === undefined
+                ? "⌛"
+                : `${player.ELO}${player.rank <= 1000 ? " (#" + player.rank.toString() + ")" : ""}`;
+        row.cells[4].innerHTML =
+            player.online === undefined
+                ? "⌛"
+                : `${player.online === true ? "✔️(" + player.device + ")" : "❌"}`;
         let opponent_str = "";
         if (player.opponent !== undefined) {
             opponent_str = `<a href="https://www.elevenvr.net/eleven/${player.id}" target='_blank'>${player.opponent}</a> (${player.opponentELO}) <a href="https://www.elevenvr.net/matchup/${player.id}/${player.opponentid}" target='_blank'>⚔️</a></th></tr>`;
         }
-        row.cells[5].innerHTML = `${opponent_str}`;
-        player.changed = false;
+        row.cells[5].innerHTML =
+            player.opponent === undefined ? "" : `${opponent_str}`;
     }
 }
 function preLoading() {
@@ -161,8 +188,12 @@ function postLoading() {
 function loadAndRender() {
     return __awaiter(this, void 0, void 0, function* () {
         preLoading();
+        let playersOld = [];
+        for (let player of players) {
+            playersOld.push(Object.assign({}, player));
+        }
         yield loadPlayersData();
-        renderPlayersData();
+        renderPlayersData(playersOld, players);
         postLoading();
     });
 }

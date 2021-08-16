@@ -1,7 +1,3 @@
-//import fetch from "node-fetch"; // only for local nodejs
-
-//import $ from "jquery";
-
 const cellsTemplate = ["links", "id", "name", "elo", "online", "opponent"];
 class Player {
   id: Number;
@@ -13,7 +9,6 @@ class Player {
   opponent?: String;
   opponentid?: Number;
   opponentELO?: Number;
-  changed?: boolean;
 
   constructor(json: any) {
     let data = json.data;
@@ -22,16 +17,15 @@ class Player {
     this.name = data?.attributes?.["user-name"];
     this.ELO = data?.attributes?.elo;
     this.rank = data?.attributes?.rank;
-    this.changed = true;
   }
 
   fillName(json: any) {
     let data = json.data;
+
     this.id = parseInt(data.id);
     this.name = data?.attributes?.["user-name"];
     this.ELO = data?.attributes?.elo;
     this.rank = data?.attributes?.rank;
-    this.changed = true;
   }
 
   fillOnlineInfo(json: any) {
@@ -153,7 +147,7 @@ async function loadPlayersData() {
   }
 }
 
-function renderPlayersData() {
+function renderPlayersData(playersOld: Player[], players: Player[]) {
   // re-render players
   let shouldCreateRows = false;
   let table = document.getElementById("players") as HTMLTableElement;
@@ -162,8 +156,22 @@ function renderPlayersData() {
   }
 
   for (let playerId = 0; playerId < players.length; playerId++) {
+    let playerOld = playersOld[playerId];
     let player = players[playerId];
+    let changed = false; // Whether playerOld and player are different
     //console.log(JSON.stringify(player, null, 2));
+
+    // Determine "changed"
+    let stringOld = JSON.stringify(playerOld);
+    let stringNew = JSON.stringify(player);
+    if (stringOld.localeCompare(stringNew) === 0) changed = false;
+    else changed = true;
+    console.log(`player ${player.name} has ${changed ? "" : "NOT"} changed!`);
+    console.log(stringOld);
+    console.log(stringNew);
+
+    // Remove class set from the previous iteration
+    $(`#players tbody tr:nth-child(${playerId + 2})`).removeClass("loading");
 
     let table = document.getElementById("players") as HTMLTableElement;
     let row: HTMLTableRowElement;
@@ -174,54 +182,58 @@ function renderPlayersData() {
       }
     } else row = table.rows[playerId + 1]; // first row is header
 
-    // Add some effects for changed cells
-    // if (player.changed == true) {
-    //   $(`#players tbody tr:nth-child(${playerId + 2})`).addClass("loading");
-    // } else {
-    //   $(`#players tbody tr:nth-child(${playerId + 2})`).removeClass("loading");
-    // }
+    if (changed == true && shouldCreateRows === false) {
+      $(`#players tbody tr:nth-child(${playerId + 2})`).addClass("loading");
+      $(`#players tbody tr:nth-child(${playerId + 2})`)
+        .fadeOut(100)
+        .fadeIn(100)
+        .fadeOut(100)
+        .fadeIn(100);
+    }
 
     row.cells[0].innerHTML = `<a href="https://beta.11-stats.com/stats/${player.id}/statistics" target="_blank">📈</a>`;
     row.cells[1].innerHTML = `<a href="https://www.elevenvr.net/eleven/${player.id}" target="_blank">${player.id}</a>`;
-    row.cells[2].innerHTML = `${player.name}${
-      player.id === 500126 ? "（教官)" : ""
-    }`;
-    row.cells[3].innerHTML = `${player.ELO}${
-      player.rank <= 1000 ? " (#" + player.rank.toString() + ")" : ""
-    }`;
-    row.cells[4].innerHTML = `${
-      player.online ? "✔️(" + player.device + ")" : "❌"
-    }`;
+    row.cells[2].innerHTML =
+      player.name === undefined
+        ? "⌛"
+        : `${player.name}${player.id === 500126 ? "（教官)" : ""}`;
+    row.cells[3].innerHTML =
+      player.ELO === undefined
+        ? "⌛"
+        : `${player.ELO}${
+            player.rank <= 1000 ? " (#" + player.rank.toString() + ")" : ""
+          }`;
+    row.cells[4].innerHTML =
+      player.online === undefined
+        ? "⌛"
+        : `${player.online === true ? "✔️(" + player.device + ")" : "❌"}`;
 
     let opponent_str = "";
     if (player.opponent !== undefined) {
       opponent_str = `<a href="https://www.elevenvr.net/eleven/${player.id}" target='_blank'>${player.opponent}</a> (${player.opponentELO}) <a href="https://www.elevenvr.net/matchup/${player.id}/${player.opponentid}" target='_blank'>⚔️</a></th></tr>`;
     }
-    row.cells[5].innerHTML = `${opponent_str}`;
-
-    player.changed = false;
+    row.cells[5].innerHTML =
+      player.opponent === undefined ? "" : `${opponent_str}`;
   }
 }
 
 function preLoading() {
   updateInfo(`Loading...`);
-  // $("#players tbody td:nth-child(3)").fadeOut();
-  // $("#players tbody td:nth-child(4)").fadeOut();
-  // $("#players tbody td:nth-child(5)").fadeOut();
 }
 
 function postLoading() {
   updateInfo(`Done`);
-  // $("#players tbody td:nth-child(3)").fadeIn();
-  // $("#players tbody td:nth-child(4)").fadeIn();
-  // $("#players tbody td:nth-child(5)").fadeIn();
 }
 async function loadAndRender() {
   preLoading();
 
+  let playersOld: Player[] = [];
+  for (let player of players) {
+    playersOld.push(Object.assign({}, player));
+  }
   await loadPlayersData();
 
-  renderPlayersData();
+  renderPlayersData(playersOld, players);
   postLoading();
 }
 
