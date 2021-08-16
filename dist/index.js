@@ -8,6 +8,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+const DEBUG = false;
 const cellsTemplate = ["links", "id", "name", "elo", "online", "opponent"];
 class Player {
     constructor(json) {
@@ -65,12 +66,14 @@ class Player {
     }
 }
 let players = [];
-const playerIds_tracked = [
-    4008, 42092, 45899, 186338, 74829, 144393, 487596, 488310, 586869, 366274,
-    378113, 426378, 484129, 486906, 494352, 498963, 504586, 504610, 558168,
-    583429, 490463, 518674, 379428, 485512, 487820, 487629, 492317, 113125,
-    596993, 500126, 487314,
-];
+const playerIds_tracked = DEBUG
+    ? [4008]
+    : [
+        4008, 42092, 45899, 186338, 74829, 144393, 487596, 488310, 586869, 366274,
+        378113, 426378, 484129, 486906, 494352, 498963, 504586, 504610, 558168,
+        583429, 490463, 518674, 379428, 485512, 487820, 487629, 492317, 113125,
+        596993, 500126, 487314, 482736,
+    ];
 function updateInfo(info) {
     let element = document.getElementById("info");
     element.innerHTML = info.toString();
@@ -104,7 +107,6 @@ function loadPlayersData() {
                 updateInfo(`Error: Failed to fetch player info. ${err}`);
             }
         }
-        players.sort((a, b) => a.name.localeCompare(b.name.toString(), "en", { sensitivity: "base" }));
         try {
             let online_response = yield online_promise;
             let json = yield online_response.json();
@@ -117,6 +119,16 @@ function loadPlayersData() {
             console.error(err);
             updateInfo(`Error: Failed to fetch live snapshot. ${err}`);
         }
+        players.sort((a, b) => {
+            let diff = +(b.online === true) - +(a.online === true);
+            if (diff === 0) {
+                return a.name.localeCompare(b.name.toString(), "en", {
+                    sensitivity: "base",
+                });
+            }
+            else
+                return diff;
+        });
     });
 }
 function renderPlayersData(playersOld, players) {
@@ -136,9 +148,7 @@ function renderPlayersData(playersOld, players) {
         else
             changed = true;
         console.log(`player ${player.name} has ${changed ? "" : "NOT"} changed!`);
-        console.log(stringOld);
-        console.log(stringNew);
-        $(`#players tbody tr:nth-child(${playerId + 2})`).removeClass("loading");
+        $(`#players tbody tr:nth-child(${playerId + 2})`).removeClass("online");
         let table = document.getElementById("players");
         let row;
         if (shouldCreateRows) {
@@ -150,19 +160,21 @@ function renderPlayersData(playersOld, players) {
         else
             row = table.rows[playerId + 1];
         if (changed == true && shouldCreateRows === false) {
-            $(`#players tbody tr:nth-child(${playerId + 2})`).addClass("loading");
             $(`#players tbody tr:nth-child(${playerId + 2})`)
-                .fadeOut(100)
-                .fadeIn(100)
-                .fadeOut(100)
-                .fadeIn(100);
+                .fadeOut(200)
+                .fadeIn(200)
+                .fadeOut(200)
+                .fadeIn(200);
+        }
+        if (player.online) {
+            $(`#players tbody tr:nth-child(${playerId + 2})`).addClass("online");
         }
         row.cells[0].innerHTML = `<a href="https://beta.11-stats.com/stats/${player.id}/statistics" target="_blank">📈</a>`;
         row.cells[1].innerHTML = `<a href="https://www.elevenvr.net/eleven/${player.id}" target="_blank">${player.id}</a>`;
         row.cells[2].innerHTML =
             player.name === undefined
                 ? "⌛"
-                : `${player.name}${player.id === 500126 ? "（教官)" : ""}`;
+                : `${player.name}${player.id === 500126 ? "🐶" : ""}`;
         row.cells[3].innerHTML =
             player.ELO === undefined
                 ? "⌛"
@@ -173,7 +185,7 @@ function renderPlayersData(playersOld, players) {
                 : `${player.online === true ? "✔️(" + player.device + ")" : "❌"}`;
         let opponent_str = "";
         if (player.opponent !== undefined) {
-            opponent_str = `<a href="https://www.elevenvr.net/eleven/${player.id}" target='_blank'>${player.opponent}</a> (${player.opponentELO}) <a href="https://www.elevenvr.net/matchup/${player.id}/${player.opponentid}" target='_blank'>⚔️</a></th></tr>`;
+            opponent_str = `<a href="https://www.elevenvr.net/eleven/${player.opponentid}" target='_blank'>${player.opponent}</a> (${player.opponentELO}) <a href="https://www.elevenvr.net/matchup/${player.id}/${player.opponentid}" target='_blank'>⚔️</a></th></tr>`;
         }
         row.cells[5].innerHTML =
             player.opponent === undefined ? "" : `${opponent_str}`;
@@ -197,7 +209,7 @@ function loadAndRender() {
         postLoading();
     });
 }
-const refreshInterval = 60;
+const refreshInterval = DEBUG ? 10 : 60;
 let seconds = refreshInterval;
 function updateTimerInfo() {
     updateInfo(`Updating in ${seconds} seconds`);

@@ -1,3 +1,5 @@
+const DEBUG = false;
+
 const cellsTemplate = ["links", "id", "name", "elo", "online", "opponent"];
 class Player {
   id: Number;
@@ -77,12 +79,14 @@ class Player {
 
 let players: Player[] = [];
 
-const playerIds_tracked = [
-  4008, 42092, 45899, 186338, 74829, 144393, 487596, 488310, 586869, 366274,
-  378113, 426378, 484129, 486906, 494352, 498963, 504586, 504610, 558168,
-  583429, 490463, 518674, 379428, 485512, 487820, 487629, 492317, 113125,
-  596993, 500126, 487314,
-];
+const playerIds_tracked = DEBUG
+  ? [4008]
+  : [
+      4008, 42092, 45899, 186338, 74829, 144393, 487596, 488310, 586869, 366274,
+      378113, 426378, 484129, 486906, 494352, 498963, 504586, 504610, 558168,
+      583429, 490463, 518674, 379428, 485512, 487820, 487629, 492317, 113125,
+      596993, 500126, 487314, 482736,
+    ];
 
 function updateInfo(info: String) {
   let element = document.getElementById("info")! as HTMLDivElement;
@@ -127,11 +131,6 @@ async function loadPlayersData() {
     }
   }
 
-  // sort players
-  players.sort((a, b) =>
-    a.name.localeCompare(b.name.toString(), "en", { sensitivity: "base" })
-  );
-
   // Fill in online status
   try {
     let online_response = await online_promise;
@@ -145,6 +144,16 @@ async function loadPlayersData() {
     console.error(err);
     updateInfo(`Error: Failed to fetch live snapshot. ${err}`);
   }
+
+  // sort players
+  players.sort((a: Player, b: Player) => {
+    let diff = +(b.online === true) - +(a.online === true);
+    if (diff === 0) {
+      return a.name.localeCompare(b.name.toString(), "en", {
+        sensitivity: "base",
+      });
+    } else return diff;
+  });
 }
 
 function renderPlayersData(playersOld: Player[], players: Player[]) {
@@ -167,11 +176,9 @@ function renderPlayersData(playersOld: Player[], players: Player[]) {
     if (stringOld.localeCompare(stringNew) === 0) changed = false;
     else changed = true;
     console.log(`player ${player.name} has ${changed ? "" : "NOT"} changed!`);
-    console.log(stringOld);
-    console.log(stringNew);
 
-    // Remove class set from the previous iteration
-    $(`#players tbody tr:nth-child(${playerId + 2})`).removeClass("loading");
+    // // Remove class set from the previous iteration
+    $(`#players tbody tr:nth-child(${playerId + 2})`).removeClass("online");
 
     let table = document.getElementById("players") as HTMLTableElement;
     let row: HTMLTableRowElement;
@@ -183,12 +190,16 @@ function renderPlayersData(playersOld: Player[], players: Player[]) {
     } else row = table.rows[playerId + 1]; // first row is header
 
     if (changed == true && shouldCreateRows === false) {
-      $(`#players tbody tr:nth-child(${playerId + 2})`).addClass("loading");
+      // $(`#players tbody tr:nth-child(${playerId + 2})`).addClass("loading");
       $(`#players tbody tr:nth-child(${playerId + 2})`)
-        .fadeOut(100)
-        .fadeIn(100)
-        .fadeOut(100)
-        .fadeIn(100);
+        .fadeOut(200)
+        .fadeIn(200)
+        .fadeOut(200)
+        .fadeIn(200);
+    }
+
+    if (player.online) {
+      $(`#players tbody tr:nth-child(${playerId + 2})`).addClass("online");
     }
 
     row.cells[0].innerHTML = `<a href="https://beta.11-stats.com/stats/${player.id}/statistics" target="_blank">📈</a>`;
@@ -196,7 +207,7 @@ function renderPlayersData(playersOld: Player[], players: Player[]) {
     row.cells[2].innerHTML =
       player.name === undefined
         ? "⌛"
-        : `${player.name}${player.id === 500126 ? "（教官)" : ""}`;
+        : `${player.name}${player.id === 500126 ? "🐶" : ""}`;
     row.cells[3].innerHTML =
       player.ELO === undefined
         ? "⌛"
@@ -210,7 +221,7 @@ function renderPlayersData(playersOld: Player[], players: Player[]) {
 
     let opponent_str = "";
     if (player.opponent !== undefined) {
-      opponent_str = `<a href="https://www.elevenvr.net/eleven/${player.id}" target='_blank'>${player.opponent}</a> (${player.opponentELO}) <a href="https://www.elevenvr.net/matchup/${player.id}/${player.opponentid}" target='_blank'>⚔️</a></th></tr>`;
+      opponent_str = `<a href="https://www.elevenvr.net/eleven/${player.opponentid}" target='_blank'>${player.opponent}</a> (${player.opponentELO}) <a href="https://www.elevenvr.net/matchup/${player.id}/${player.opponentid}" target='_blank'>⚔️</a></th></tr>`;
     }
     row.cells[5].innerHTML =
       player.opponent === undefined ? "" : `${opponent_str}`;
@@ -237,7 +248,7 @@ async function loadAndRender() {
   postLoading();
 }
 
-const refreshInterval = 60; // seconds
+const refreshInterval = DEBUG ? 10 : 60; // seconds
 let seconds = refreshInterval;
 
 function updateTimerInfo() {
