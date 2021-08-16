@@ -1,6 +1,6 @@
 const DEBUG = false;
 
-const cellsTemplate = ["links", "id", "name", "elo", "online", "opponent"];
+const cellsTemplate = ["links", "id", "name", "elo", "opponent", "online"];
 class Player {
   id: Number;
   name: String;
@@ -214,17 +214,18 @@ function renderPlayersData(playersOld: Player[], players: Player[]) {
         : `${player.ELO}${
             player.rank <= 1000 ? " (#" + player.rank.toString() + ")" : ""
           }`;
-    row.cells[4].innerHTML =
-      player.online === undefined
-        ? "⌛"
-        : `${player.online === true ? "✔️(" + player.device + ")" : "❌"}`;
 
     let opponent_str = "";
     if (player.opponent !== undefined) {
       opponent_str = `<a href="https://www.elevenvr.net/eleven/${player.opponentid}" target='_blank'>${player.opponent}</a> (${player.opponentELO}) <a href="https://www.elevenvr.net/matchup/${player.id}/${player.opponentid}" target='_blank'>⚔️</a></th></tr>`;
     }
-    row.cells[5].innerHTML =
+    row.cells[4].innerHTML =
       player.opponent === undefined ? "" : `${opponent_str}`;
+
+    row.cells[5].innerHTML =
+      player.online === undefined
+        ? "⌛"
+        : `${player.online === true ? "✔️(" + player.device + ")" : "❌"}`;
   }
 }
 
