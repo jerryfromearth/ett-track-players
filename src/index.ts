@@ -8,6 +8,7 @@ class Player {
   rank: Number;
   online?: Boolean;
   device?: String;
+  ranked?: Boolean;
   opponent?: String;
   opponentid?: Number;
   opponentELO?: Number;
@@ -62,17 +63,19 @@ class Player {
 
     if (rooms.length > 0) {
       let room = rooms[0];
-      room.Players.forEach((roomplayers: any) => {
-        if (roomplayers.Id !== this.id.toString()) {
-          this.opponent = roomplayers.UserName;
-          this.opponentELO = roomplayers.ELO;
-          this.opponentid = roomplayers.Id;
+      room.Players.forEach((roomplayer: any) => {
+        if (roomplayer.Id !== this.id.toString()) {
+          this.opponent = roomplayer.UserName;
+          this.opponentELO = roomplayer.ELO;
+          this.opponentid = roomplayer.Id;
         }
       });
+      this.ranked = room?.Match?.Ranked;
     } else {
       this.opponent = undefined;
       this.opponentELO = undefined;
       this.opponentid = undefined;
+      this.ranked = undefined;
     }
   }
 }
@@ -228,7 +231,15 @@ function renderPlayersData(playersOld: Player[], players: Player[]) {
 
     let opponent_str = "";
     if (player.opponent !== undefined) {
-      opponent_str = `<a href="https://www.elevenvr.net/eleven/${player.opponentid}" target='_blank'>${player.opponent}</a> (${player.opponentELO}) <a href="https://www.elevenvr.net/matchup/${player.id}/${player.opponentid}" target='_blank'>⚔️</a></th></tr>`;
+      opponent_str = `<a href="https://www.elevenvr.net/eleven/${
+        player.opponentid
+      }" target='_blank'>${player.opponent}</a> <span class="${
+        player.ranked ? "ranked" : "unranked"
+      }">(${
+        player.opponentELO
+      })<span><a href="https://www.elevenvr.net/matchup/${player.id}/${
+        player.opponentid
+      }" target='_blank'>⚔️</a></th></tr>`;
     }
     row.cells[4].innerHTML =
       player.opponent === undefined ? "" : `${opponent_str}`;

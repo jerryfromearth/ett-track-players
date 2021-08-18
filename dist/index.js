@@ -28,6 +28,7 @@ class Player {
         this.rank = (_c = data === null || data === void 0 ? void 0 : data.attributes) === null || _c === void 0 ? void 0 : _c.rank;
     }
     fillOnlineInfo(json) {
+        var _a;
         let users = json.OnlineUses.filter((onlinePlayer) => onlinePlayer.Id === this.id.toString());
         if (users.length > 0) {
             this.online = true;
@@ -50,18 +51,20 @@ class Player {
         });
         if (rooms.length > 0) {
             let room = rooms[0];
-            room.Players.forEach((roomplayers) => {
-                if (roomplayers.Id !== this.id.toString()) {
-                    this.opponent = roomplayers.UserName;
-                    this.opponentELO = roomplayers.ELO;
-                    this.opponentid = roomplayers.Id;
+            room.Players.forEach((roomplayer) => {
+                if (roomplayer.Id !== this.id.toString()) {
+                    this.opponent = roomplayer.UserName;
+                    this.opponentELO = roomplayer.ELO;
+                    this.opponentid = roomplayer.Id;
                 }
             });
+            this.ranked = (_a = room === null || room === void 0 ? void 0 : room.Match) === null || _a === void 0 ? void 0 : _a.Ranked;
         }
         else {
             this.opponent = undefined;
             this.opponentELO = undefined;
             this.opponentid = undefined;
+            this.ranked = undefined;
         }
     }
 }
@@ -197,7 +200,7 @@ function renderPlayersData(playersOld, players) {
                 : `${player.ELO}${player.rank <= 1000 ? " (#" + player.rank.toString() + ")" : ""}`;
         let opponent_str = "";
         if (player.opponent !== undefined) {
-            opponent_str = `<a href="https://www.elevenvr.net/eleven/${player.opponentid}" target='_blank'>${player.opponent}</a> (${player.opponentELO}) <a href="https://www.elevenvr.net/matchup/${player.id}/${player.opponentid}" target='_blank'>⚔️</a></th></tr>`;
+            opponent_str = `<a href="https://www.elevenvr.net/eleven/${player.opponentid}" target='_blank'>${player.opponent}</a> <span class="${player.ranked ? "ranked" : "unranked"}">(${player.opponentELO})<span><a href="https://www.elevenvr.net/matchup/${player.id}/${player.opponentid}" target='_blank'>⚔️</a></th></tr>`;
         }
         row.cells[4].innerHTML =
             player.opponent === undefined ? "" : `${opponent_str}`;
