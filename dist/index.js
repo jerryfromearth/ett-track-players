@@ -66,25 +66,39 @@ class Player {
     }
 }
 let players = [];
-const playerIds_tracked = DEBUG
-    ? [4008]
-    : [
-        4008, 42092, 45899, 186338, 74829, 144393, 487596, 488310, 586869, 366274,
-        378113, 426378, 484129, 486906, 494352, 498963, 504586, 504610, 558168,
-        583429, 490463, 518674, 379428, 485512, 487820, 487629, 492317, 113125,
-        596993, 500126, 487314, 482736, 609419,
-    ];
+let playerIds_tracked = [];
 function updateInfo(info) {
     let element = document.getElementById("info");
     element.innerHTML = info.toString();
 }
+function loadPlayerList() {
+    return __awaiter(this, void 0, void 0, function* () {
+        try {
+            if (DEBUG) {
+                playerIds_tracked = [4008];
+            }
+            else {
+                let response = yield fetch("./players.json");
+                let json = yield response.json();
+                playerIds_tracked.push(...json.playerIds);
+            }
+        }
+        catch (err) {
+            console.error(err);
+            updateInfo(`Error: Failed to fetch player list. ${err}`);
+        }
+    });
+}
 function init() {
-    players = [];
-    updateInfo("");
-    for (let playerId of playerIds_tracked) {
-        let player = new Player({ data: { id: playerId.toString() } });
-        players.push(player);
-    }
+    return __awaiter(this, void 0, void 0, function* () {
+        yield loadPlayerList();
+        players = [];
+        updateInfo("");
+        for (let playerId of playerIds_tracked) {
+            let player = new Player({ data: { id: playerId.toString() } });
+            players.push(player);
+        }
+    });
 }
 function loadPlayersData() {
     return __awaiter(this, void 0, void 0, function* () {
@@ -197,7 +211,7 @@ function preLoading() {
     updateInfo(`Loading...`);
 }
 function postLoading() {
-    updateInfo(`Done`);
+    updateInfo(`Loaded. Rendering...`);
 }
 function loadAndRender() {
     return __awaiter(this, void 0, void 0, function* () {
@@ -207,8 +221,8 @@ function loadAndRender() {
             playersOld.push(Object.assign({}, player));
         }
         yield loadPlayersData();
-        renderPlayersData(playersOld, players);
         postLoading();
+        renderPlayersData(playersOld, players);
     });
 }
 const refreshInterval = DEBUG ? 10 : 60;
@@ -223,10 +237,14 @@ function updateTimerInfo() {
     }
 }
 function main() {
-    loadAndRender();
-    setInterval(loadAndRender, refreshInterval * 1000);
-    setInterval(updateTimerInfo, 1000);
+    return __awaiter(this, void 0, void 0, function* () {
+        yield loadAndRender();
+        setInterval(loadAndRender, refreshInterval * 1000);
+        setInterval(updateTimerInfo, 1000);
+    });
 }
-init();
-main();
+(() => __awaiter(void 0, void 0, void 0, function* () {
+    yield init();
+    yield main();
+}))();
 //# sourceMappingURL=index.js.map

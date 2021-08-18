@@ -79,21 +79,30 @@ class Player {
 
 let players: Player[] = [];
 
-const playerIds_tracked = DEBUG
-  ? [4008]
-  : [
-      4008, 42092, 45899, 186338, 74829, 144393, 487596, 488310, 586869, 366274,
-      378113, 426378, 484129, 486906, 494352, 498963, 504586, 504610, 558168,
-      583429, 490463, 518674, 379428, 485512, 487820, 487629, 492317, 113125,
-      596993, 500126, 487314, 482736, 609419,
-    ];
+let playerIds_tracked: Number[] = [];
 
 function updateInfo(info: String) {
   let element = document.getElementById("info")! as HTMLDivElement;
   element.innerHTML = info.toString();
 }
-//
-function init() {
+
+async function loadPlayerList() {
+  try {
+    if (DEBUG) {
+      playerIds_tracked = [4008];
+    } else {
+      let response = await fetch("./players.json");
+      let json = await response.json();
+      playerIds_tracked.push(...json.playerIds);
+    }
+  } catch (err) {
+    console.error(err);
+    updateInfo(`Error: Failed to fetch player list. ${err}`);
+  }
+}
+async function init() {
+  await loadPlayerList();
+
   players = [];
   updateInfo("");
 
@@ -236,7 +245,7 @@ function preLoading() {
 }
 
 function postLoading() {
-  updateInfo(`Done`);
+  updateInfo(`Loaded. Rendering...`);
 }
 async function loadAndRender() {
   preLoading();
@@ -246,9 +255,9 @@ async function loadAndRender() {
     playersOld.push(Object.assign({}, player));
   }
   await loadPlayersData();
+  postLoading();
 
   renderPlayersData(playersOld, players);
-  postLoading();
 }
 
 const refreshInterval = DEBUG ? 10 : 60; // seconds
@@ -263,12 +272,14 @@ function updateTimerInfo() {
   }
 }
 
-function main() {
-  loadAndRender();
+async function main() {
+  await loadAndRender();
+
   setInterval(loadAndRender, refreshInterval * 1000);
 
   setInterval(updateTimerInfo, 1000);
 }
-
-init();
-main();
+(async () => {
+  await init();
+  await main();
+})();
