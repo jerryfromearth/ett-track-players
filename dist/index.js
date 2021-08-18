@@ -147,7 +147,9 @@ function renderPlayersData(playersOld, players) {
             changed = false;
         else
             changed = true;
-        console.log(`player ${player.name} has ${changed ? "" : "NOT"} changed!`);
+        console.log(`player ${player.name} has ${changed ? "" : "NOT "}changed!`);
+        console.log(`old: ${stringOld}`);
+        console.log(`new: ${stringNew}`);
         $(`#players tbody tr:nth-child(${playerId + 2})`).removeClass("online");
         let table = document.getElementById("players");
         let row;
@@ -161,10 +163,10 @@ function renderPlayersData(playersOld, players) {
             row = table.rows[playerId + 1];
         if (changed == true && shouldCreateRows === false) {
             $(`#players tbody tr:nth-child(${playerId + 2})`)
-                .fadeOut(200)
-                .fadeIn(200)
-                .fadeOut(200)
-                .fadeIn(200);
+                .fadeOut(500)
+                .fadeIn(500)
+                .fadeOut(500)
+                .fadeIn(500);
         }
         if (player.online) {
             $(`#players tbody tr:nth-child(${playerId + 2})`).addClass("online");

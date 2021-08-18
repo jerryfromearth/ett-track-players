@@ -175,7 +175,9 @@ function renderPlayersData(playersOld: Player[], players: Player[]) {
     let stringNew = JSON.stringify(player);
     if (stringOld.localeCompare(stringNew) === 0) changed = false;
     else changed = true;
-    console.log(`player ${player.name} has ${changed ? "" : "NOT"} changed!`);
+    console.log(`player ${player.name} has ${changed ? "" : "NOT "}changed!`);
+    console.log(`old: ${stringOld}`);
+    console.log(`new: ${stringNew}`);
 
     // // Remove class set from the previous iteration
     $(`#players tbody tr:nth-child(${playerId + 2})`).removeClass("online");
@@ -192,10 +194,10 @@ function renderPlayersData(playersOld: Player[], players: Player[]) {
     if (changed == true && shouldCreateRows === false) {
       // $(`#players tbody tr:nth-child(${playerId + 2})`).addClass("loading");
       $(`#players tbody tr:nth-child(${playerId + 2})`)
-        .fadeOut(200)
-        .fadeIn(200)
-        .fadeOut(200)
-        .fadeIn(200);
+        .fadeOut(500)
+        .fadeIn(500)
+        .fadeOut(500)
+        .fadeIn(500);
     }
 
     if (player.online) {
