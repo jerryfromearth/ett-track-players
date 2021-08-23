@@ -191,9 +191,7 @@ function renderPlayersData(playersOld, players) {
         row.cells[0].innerHTML = `<a href="https://beta.11-stats.com/stats/${player.id}/statistics" target="_blank">📈</a>`;
         row.cells[1].innerHTML = `<a href="https://www.elevenvr.net/eleven/${player.id}" target="_blank">${player.id}</a>`;
         row.cells[2].innerHTML =
-            player.name === undefined
-                ? "⌛"
-                : `${player.name}${player.id === 500126 ? "🐶" : ""}`;
+            player.name === undefined ? "⌛" : `${player.name}`;
         row.cells[3].innerHTML =
             player.ELO === undefined
                 ? "⌛"
