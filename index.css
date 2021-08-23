@@ -15,13 +15,23 @@ a {
   background-color: #801b1b;
 }
 
-.online td {
+#players > tbody > tr.online > td,
+#players > tbody > tr.online:hover > td {
   background-color: #193b02;
 }
+
+#players > tbody > tr:hover > td {
+  background-color: #0d0e0c;
+}
+
 .ranked {
   color: #ff6600;
 }
 
 #players {
   font: 14px/20px Arial, Sans-serif;
+}
+
+.hidden {
+  display: none;
 }

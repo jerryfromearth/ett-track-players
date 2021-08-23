@@ -1,12 +1,21 @@
 const DEBUG = false;
 
-const cellsTemplate = ["links", "id", "name", "elo", "opponent", "online"];
+const cellsTemplate = [
+  "links",
+  "id",
+  "name",
+  "elo",
+  "opponent",
+  "last online",
+  "online",
+];
 class Player {
   id: Number;
   name: String;
   ELO: Number;
   rank: Number;
   online?: Boolean;
+  lastOnline: number;
   device?: String;
   ranked?: Boolean;
   opponent?: String;
@@ -20,6 +29,7 @@ class Player {
     this.name = data?.attributes?.["user-name"];
     this.ELO = data?.attributes?.elo;
     this.rank = data?.attributes?.rank;
+    this.lastOnline = 0;
   }
 
   fillName(json: any) {
@@ -29,6 +39,7 @@ class Player {
     this.name = data?.attributes?.["user-name"];
     this.ELO = data?.attributes?.elo;
     this.rank = data?.attributes?.rank;
+    this.lastOnline = Date.parse(data?.attributes?.["last-online"]);
   }
 
   fillOnlineInfo(json: any) {
@@ -193,6 +204,7 @@ function renderPlayersData(playersOld: Player[], players: Player[]) {
       for (let cellId = 0; cellId < cellsTemplate.length; cellId++) {
         row.insertCell();
       }
+      row.cells[6].classList.add("hidden");
     } else row = tbody.rows[playerId];
 
     if (changed == true && shouldCreateRows === false) {
@@ -234,10 +246,56 @@ function renderPlayersData(playersOld: Player[], players: Player[]) {
     row.cells[4].innerHTML =
       player.opponent === undefined ? "" : `${opponent_str}`;
 
+    function getTimeDifferenceString(current: number, previous: number) {
+      var msPerMinute = 60 * 1000;
+      var msPerHour = msPerMinute * 60;
+      var msPerDay = msPerHour * 24;
+      var msPerMonth = msPerDay * 30;
+      var msPerYear = msPerDay * 365;
+
+      var elapsed = current - previous;
+
+      if (elapsed < msPerMinute) {
+        return Math.round(elapsed / 1000) + " seconds ago";
+      } else if (elapsed < msPerHour) {
+        return Math.round(elapsed / msPerMinute) + " minutes ago";
+      } else if (elapsed < msPerDay) {
+        return Math.round(elapsed / msPerHour) + " hours ago";
+      } else if (elapsed < msPerMonth) {
+        return "approximately " + Math.round(elapsed / msPerDay) + " days ago";
+      } else if (elapsed < msPerYear) {
+        return (
+          "approximately " + Math.round(elapsed / msPerMonth) + " months ago"
+        );
+      } else {
+        return (
+          "approximately " + Math.round(elapsed / msPerYear) + " years ago"
+        );
+      }
+    }
+
+    var options: Intl.DateTimeFormatOptions = {
+      timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+      timeZoneName: "short",
+    };
+
     row.cells[5].innerHTML =
       player.online === undefined
         ? "⌛"
-        : `${player.online === true ? "✔️(" + player.device + ")" : "❌"}`;
+        : `${
+            player.online === true
+              ? "Online (" + player.device + ")"
+              : "<span title='" +
+                getTimeDifferenceString(Date.now(), player.lastOnline) +
+                "'>" +
+                new Date(player.lastOnline).toLocaleString(undefined, options) +
+                "</span>"
+          }`;
+
+    row.cells[6].innerHTML =
+      player.online === undefined
+        ? "⌛"
+        : `${player.online === true ? "✔️" : "❌"}`;
   }
 
   // Sort table
@@ -281,7 +339,7 @@ async function main() {
   $("#players").tablesorter({
     sortInitialOrder: "desc",
     sortList: [
-      [5, 0],
+      [6, 0],
       [2, 0],
     ],
     headers: {
@@ -290,7 +348,8 @@ async function main() {
       2: { sorter: "string", sortInitialOrder: "asc" },
       3: { sorter: "string", sortInitialOrder: "desc" },
       4: { sorter: false, parser: false },
-      5: { lockedOrder: "asc" },
+      5: { sorter: "date", parser: "isoDate" },
+      6: { lockedOrder: "asc" },
     },
   });
 

@@ -9,7 +9,15 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 const DEBUG = false;
-const cellsTemplate = ["links", "id", "name", "elo", "opponent", "online"];
+const cellsTemplate = [
+    "links",
+    "id",
+    "name",
+    "elo",
+    "opponent",
+    "last online",
+    "online",
+];
 class Player {
     constructor(json) {
         var _a, _b, _c;
@@ -18,14 +26,16 @@ class Player {
         this.name = (_a = data === null || data === void 0 ? void 0 : data.attributes) === null || _a === void 0 ? void 0 : _a["user-name"];
         this.ELO = (_b = data === null || data === void 0 ? void 0 : data.attributes) === null || _b === void 0 ? void 0 : _b.elo;
         this.rank = (_c = data === null || data === void 0 ? void 0 : data.attributes) === null || _c === void 0 ? void 0 : _c.rank;
+        this.lastOnline = 0;
     }
     fillName(json) {
-        var _a, _b, _c;
+        var _a, _b, _c, _d;
         let data = json.data;
         this.id = parseInt(data.id);
         this.name = (_a = data === null || data === void 0 ? void 0 : data.attributes) === null || _a === void 0 ? void 0 : _a["user-name"];
         this.ELO = (_b = data === null || data === void 0 ? void 0 : data.attributes) === null || _b === void 0 ? void 0 : _b.elo;
         this.rank = (_c = data === null || data === void 0 ? void 0 : data.attributes) === null || _c === void 0 ? void 0 : _c.rank;
+        this.lastOnline = Date.parse((_d = data === null || data === void 0 ? void 0 : data.attributes) === null || _d === void 0 ? void 0 : _d["last-online"]);
     }
     fillOnlineInfo(json) {
         var _a;
@@ -167,6 +177,7 @@ function renderPlayersData(playersOld, players) {
             for (let cellId = 0; cellId < cellsTemplate.length; cellId++) {
                 row.insertCell();
             }
+            row.cells[6].classList.add("hidden");
         }
         else
             row = tbody.rows[playerId];
@@ -194,10 +205,50 @@ function renderPlayersData(playersOld, players) {
         }
         row.cells[4].innerHTML =
             player.opponent === undefined ? "" : `${opponent_str}`;
+        function getTimeDifferenceString(current, previous) {
+            var msPerMinute = 60 * 1000;
+            var msPerHour = msPerMinute * 60;
+            var msPerDay = msPerHour * 24;
+            var msPerMonth = msPerDay * 30;
+            var msPerYear = msPerDay * 365;
+            var elapsed = current - previous;
+            if (elapsed < msPerMinute) {
+                return Math.round(elapsed / 1000) + " seconds ago";
+            }
+            else if (elapsed < msPerHour) {
+                return Math.round(elapsed / msPerMinute) + " minutes ago";
+            }
+            else if (elapsed < msPerDay) {
+                return Math.round(elapsed / msPerHour) + " hours ago";
+            }
+            else if (elapsed < msPerMonth) {
+                return "approximately " + Math.round(elapsed / msPerDay) + " days ago";
+            }
+            else if (elapsed < msPerYear) {
+                return ("approximately " + Math.round(elapsed / msPerMonth) + " months ago");
+            }
+            else {
+                return ("approximately " + Math.round(elapsed / msPerYear) + " years ago");
+            }
+        }
+        var options = {
+            timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+            timeZoneName: "short",
+        };
         row.cells[5].innerHTML =
             player.online === undefined
                 ? "⌛"
-                : `${player.online === true ? "✔️(" + player.device + ")" : "❌"}`;
+                : `${player.online === true
+                    ? "Online (" + player.device + ")"
+                    : "<span title='" +
+                        getTimeDifferenceString(Date.now(), player.lastOnline) +
+                        "'>" +
+                        new Date(player.lastOnline).toLocaleString(undefined, options) +
+                        "</span>"}`;
+        row.cells[6].innerHTML =
+            player.online === undefined
+                ? "⌛"
+                : `${player.online === true ? "✔️" : "❌"}`;
     }
     $("#players").trigger("update");
     $("#players").trigger("appendCache");
@@ -236,7 +287,7 @@ function main() {
         $("#players").tablesorter({
             sortInitialOrder: "desc",
             sortList: [
-                [5, 0],
+                [6, 0],
                 [2, 0],
             ],
             headers: {
@@ -245,7 +296,8 @@ function main() {
                 2: { sorter: "string", sortInitialOrder: "asc" },
                 3: { sorter: "string", sortInitialOrder: "desc" },
                 4: { sorter: false, parser: false },
-                5: { lockedOrder: "asc" },
+                5: { sorter: "date", parser: "isoDate" },
+                6: { lockedOrder: "asc" },
             },
         });
         yield loadAndRender();
