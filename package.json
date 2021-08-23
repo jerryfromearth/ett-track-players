@@ -8,6 +8,7 @@
   },
   "devDependencies": {
     "@types/jquery": "^3.5.6",
+    "@types/tablesorter": "^2.31.2",
     "@types/node": "^16.4.13",
     "@types/node-fetch": "^2.5.12",
     "lite-server": "^2.6.1",

@@ -1,9 +1,5 @@
 html,
-body,
-input,
-textarea,
-select,
-button {
+body {
   border-color: #736b5e;
   color: #e8e6e3;
 
@@ -19,9 +15,13 @@ a {
   background-color: #801b1b;
 }
 
-.online {
+.online td {
   background-color: #193b02;
 }
 .ranked {
   color: #ff6600;
+}
+
+#players {
+  font: 14px/20px Arial, Sans-serif;
 }

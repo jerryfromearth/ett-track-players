@@ -85,14 +85,16 @@ let players: Player[] = [];
 let playerIds_tracked: Number[] = [];
 
 function updateInfo(info: String) {
-  let element = document.getElementById("info")! as HTMLDivElement;
+  let element = document.getElementById("info")! as unknown as HTMLDivElement;
   element.innerHTML = info.toString();
 }
 
 async function loadPlayerList() {
   try {
     if (DEBUG) {
-      playerIds_tracked = [4008];
+      playerIds_tracked = [
+        4001, 4002, 4003, 4007, 4006, 4005, 4010, 4008, 4009,
+      ];
     } else {
       let response = await fetch("./players.json");
       let json = await response.json();
@@ -156,23 +158,14 @@ async function loadPlayersData() {
     console.error(err);
     updateInfo(`Error: Failed to fetch live snapshot. ${err}`);
   }
-
-  // sort players
-  players.sort((a: Player, b: Player) => {
-    let diff = +(b.online === true) - +(a.online === true);
-    if (diff === 0) {
-      return a.name.localeCompare(b.name.toString(), "en", {
-        sensitivity: "base",
-      });
-    } else return diff;
-  });
 }
 
 function renderPlayersData(playersOld: Player[], players: Player[]) {
   // re-render players
   let shouldCreateRows = false;
-  let table = document.getElementById("players") as HTMLTableElement;
-  if (table.rows.length == 1) {
+  let table = document.getElementById("players") as unknown as HTMLTableElement;
+  let tbody = table.tBodies[0];
+  if (tbody.rows.length == 0) {
     shouldCreateRows = true;
   }
 
@@ -191,21 +184,20 @@ function renderPlayersData(playersOld: Player[], players: Player[]) {
     console.log(`old: ${stringOld}`);
     console.log(`new: ${stringNew}`);
 
-    // // Remove class set from the previous iteration
-    $(`#players tbody tr:nth-child(${playerId + 2})`).removeClass("online");
+    // Remove class set from the previous iteration
+    $(`#players tbody tr:nth-child(${playerId + 1})`).removeClass("online");
 
-    let table = document.getElementById("players") as HTMLTableElement;
     let row: HTMLTableRowElement;
     if (shouldCreateRows) {
-      row = table.insertRow(-1);
+      row = tbody.insertRow(-1);
       for (let cellId = 0; cellId < cellsTemplate.length; cellId++) {
         row.insertCell();
       }
-    } else row = table.rows[playerId + 1]; // first row is header
+    } else row = tbody.rows[playerId];
 
     if (changed == true && shouldCreateRows === false) {
-      // $(`#players tbody tr:nth-child(${playerId + 2})`).addClass("loading");
-      $(`#players tbody tr:nth-child(${playerId + 2})`)
+      // $(`#players tbody tr:nth-child(${playerId + 1})`).addClass("loading");
+      $(`#players tbody tr:nth-child(${playerId + 1})`)
         .fadeOut(500)
         .fadeIn(500)
         .fadeOut(500)
@@ -213,7 +205,7 @@ function renderPlayersData(playersOld: Player[], players: Player[]) {
     }
 
     if (player.online) {
-      $(`#players tbody tr:nth-child(${playerId + 2})`).addClass("online");
+      $(`#players tbody tr:nth-child(${playerId + 1})`).addClass("online");
     }
 
     row.cells[0].innerHTML = `<a href="https://beta.11-stats.com/stats/${player.id}/statistics" target="_blank">📈</a>`;
@@ -247,6 +239,10 @@ function renderPlayersData(playersOld: Player[], players: Player[]) {
         ? "⌛"
         : `${player.online === true ? "✔️(" + player.device + ")" : "❌"}`;
   }
+
+  // Sort table
+  $("#players").trigger("update");
+  $("#players").trigger("appendCache");
 }
 
 function preLoading() {
@@ -282,6 +278,22 @@ function updateTimerInfo() {
 }
 
 async function main() {
+  $("#players").tablesorter({
+    sortInitialOrder: "desc",
+    sortList: [
+      [5, 0],
+      [2, 0],
+    ],
+    headers: {
+      0: { sorter: false, parser: false },
+      1: { sorter: "digit", sortInitialOrder: "asc" },
+      2: { sorter: "string", sortInitialOrder: "asc" },
+      3: { sorter: "string", sortInitialOrder: "desc" },
+      4: { sorter: false, parser: false },
+      5: { lockedOrder: "asc" },
+    },
+  });
+
   await loadAndRender();
 
   setInterval(loadAndRender, refreshInterval * 1000);

@@ -78,7 +78,9 @@ function loadPlayerList() {
     return __awaiter(this, void 0, void 0, function* () {
         try {
             if (DEBUG) {
-                playerIds_tracked = [4008];
+                playerIds_tracked = [
+                    4001, 4002, 4003, 4007, 4006, 4005, 4010, 4008, 4009,
+                ];
             }
             else {
                 let response = yield fetch("./players.json");
@@ -136,22 +138,13 @@ function loadPlayersData() {
             console.error(err);
             updateInfo(`Error: Failed to fetch live snapshot. ${err}`);
         }
-        players.sort((a, b) => {
-            let diff = +(b.online === true) - +(a.online === true);
-            if (diff === 0) {
-                return a.name.localeCompare(b.name.toString(), "en", {
-                    sensitivity: "base",
-                });
-            }
-            else
-                return diff;
-        });
     });
 }
 function renderPlayersData(playersOld, players) {
     let shouldCreateRows = false;
     let table = document.getElementById("players");
-    if (table.rows.length == 1) {
+    let tbody = table.tBodies[0];
+    if (tbody.rows.length == 0) {
         shouldCreateRows = true;
     }
     for (let playerId = 0; playerId < players.length; playerId++) {
@@ -167,26 +160,25 @@ function renderPlayersData(playersOld, players) {
         console.log(`player ${player.name} has ${changed ? "" : "NOT "}changed!`);
         console.log(`old: ${stringOld}`);
         console.log(`new: ${stringNew}`);
-        $(`#players tbody tr:nth-child(${playerId + 2})`).removeClass("online");
-        let table = document.getElementById("players");
+        $(`#players tbody tr:nth-child(${playerId + 1})`).removeClass("online");
         let row;
         if (shouldCreateRows) {
-            row = table.insertRow(-1);
+            row = tbody.insertRow(-1);
             for (let cellId = 0; cellId < cellsTemplate.length; cellId++) {
                 row.insertCell();
             }
         }
         else
-            row = table.rows[playerId + 1];
+            row = tbody.rows[playerId];
         if (changed == true && shouldCreateRows === false) {
-            $(`#players tbody tr:nth-child(${playerId + 2})`)
+            $(`#players tbody tr:nth-child(${playerId + 1})`)
                 .fadeOut(500)
                 .fadeIn(500)
                 .fadeOut(500)
                 .fadeIn(500);
         }
         if (player.online) {
-            $(`#players tbody tr:nth-child(${playerId + 2})`).addClass("online");
+            $(`#players tbody tr:nth-child(${playerId + 1})`).addClass("online");
         }
         row.cells[0].innerHTML = `<a href="https://beta.11-stats.com/stats/${player.id}/statistics" target="_blank">📈</a>`;
         row.cells[1].innerHTML = `<a href="https://www.elevenvr.net/eleven/${player.id}" target="_blank">${player.id}</a>`;
@@ -207,6 +199,8 @@ function renderPlayersData(playersOld, players) {
                 ? "⌛"
                 : `${player.online === true ? "✔️(" + player.device + ")" : "❌"}`;
     }
+    $("#players").trigger("update");
+    $("#players").trigger("appendCache");
 }
 function preLoading() {
     updateInfo(`Loading...`);
@@ -239,6 +233,21 @@ function updateTimerInfo() {
 }
 function main() {
     return __awaiter(this, void 0, void 0, function* () {
+        $("#players").tablesorter({
+            sortInitialOrder: "desc",
+            sortList: [
+                [5, 0],
+                [2, 0],
+            ],
+            headers: {
+                0: { sorter: false, parser: false },
+                1: { sorter: "digit", sortInitialOrder: "asc" },
+                2: { sorter: "string", sortInitialOrder: "asc" },
+                3: { sorter: "string", sortInitialOrder: "desc" },
+                4: { sorter: false, parser: false },
+                5: { lockedOrder: "asc" },
+            },
+        });
         yield loadAndRender();
         setInterval(loadAndRender, refreshInterval * 1000);
         setInterval(updateTimerInfo, 1000);

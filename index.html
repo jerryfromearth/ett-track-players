@@ -12,15 +12,22 @@
     <meta name="msapplication-TileColor" content="#da532c">
     <meta name="theme-color" content="#ffffff">
     <title>ETT Player Tracker</title>
-    <!--script type="text/javascript" src="players.json" id="data"></script-->
+    <link rel="stylesheet" href="theme.dark.min.css"/>
     <link rel="stylesheet" href="index.css" />
     <script src="dist/index.js" defer></script>
-    <script src="jquery-3.6.0.min.js" defer></script>
+    <script src="jquery-3.6.0.min.js"></script>
+    <script src="jquery.tablesorter.min.js"></script>
+    <script>
+    </script>
   </head>
   <body>
     
-    <table id="players" class="table-sort table-sort-search" style="width: 100%; position: static;">
-      <tr><th>Links</th><th>Id</th><th>name</th><th>ELO</th><th>opponent</th><th>online</th></tr>
+    <table id="players" class="tablesorter-dark tablesorter" style="width: 100%; position: static;">
+      <thead>
+        <tr><th>&nbsp;</th><th>Id</th><th>Name</th><th>ELO</th><th>Opponent</th><th>Online</th></tr>
+      </thead>
+      <tbody>
+      </tbody>
     </table>
     <span id="info">Refresh in X seconds</span>
   </body>
