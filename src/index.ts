@@ -285,12 +285,16 @@ function renderPlayersData(playersOld: Player[], players: Player[]) {
         : `${
             player.online === true
               ? "Online (" + player.device + ")"
-              : "<span title='" +
+              : "<span class='hidden'>" +
+                player.lastOnline +
+                "###</span><span title='" +
                 getTimeDifferenceString(Date.now(), player.lastOnline) +
                 "'>" +
                 new Date(player.lastOnline).toLocaleString(undefined, options) +
                 "</span>"
           }`;
+
+    row.cells[5].setAttribute("data-timestamp", player.lastOnline.toString());
 
     row.cells[6].innerHTML =
       player.online === undefined
@@ -310,6 +314,7 @@ function preLoading() {
 function postLoading() {
   updateInfo(`Loaded. Rendering...`);
 }
+
 async function loadAndRender() {
   preLoading();
 
@@ -336,6 +341,27 @@ function updateTimerInfo() {
 }
 
 async function main() {
+  $.tablesorter.addParser({
+    // set a unique id
+    id: "rangesort",
+    is: function (_) {
+      // return false so this parser is not auto detected
+      return false;
+    },
+
+    // TODO:
+    // https://github.com/DefinitelyTyped/DefinitelyTyped/blob/master/types/tablesorter/Parsing/Parser.d.ts#L45 should be fixed:
+    // format(text: string, table: TElement, cell: TElement, cellIndex: number): string;
+    format: function (s, _table) {
+      // After the TODO above is fixed, we can use this line:
+      // return $(cell).attr("data-timestamp");
+      return s.split("###")[0];
+    },
+    // set type, either numeric or text
+    type: "numeric",
+    parsed: false,
+  });
+
   $("#players").tablesorter({
     sortInitialOrder: "desc",
     sortList: [
@@ -348,8 +374,7 @@ async function main() {
       2: { sorter: "string", sortInitialOrder: "asc" },
       3: { sorter: "string", sortInitialOrder: "desc" },
       4: { sorter: false, parser: false },
-      5: { sorter: "date", parser: "isoDate" },
-      6: { lockedOrder: "asc" },
+      5: { sorter: "rangesort" },
     },
   });
 

@@ -240,11 +240,14 @@ function renderPlayersData(playersOld, players) {
                 ? "⌛"
                 : `${player.online === true
                     ? "Online (" + player.device + ")"
-                    : "<span title='" +
+                    : "<span class='hidden'>" +
+                        player.lastOnline +
+                        "###</span><span title='" +
                         getTimeDifferenceString(Date.now(), player.lastOnline) +
                         "'>" +
                         new Date(player.lastOnline).toLocaleString(undefined, options) +
                         "</span>"}`;
+        row.cells[5].setAttribute("data-timestamp", player.lastOnline.toString());
         row.cells[6].innerHTML =
             player.online === undefined
                 ? "⌛"
@@ -284,6 +287,17 @@ function updateTimerInfo() {
 }
 function main() {
     return __awaiter(this, void 0, void 0, function* () {
+        $.tablesorter.addParser({
+            id: "rangesort",
+            is: function (_) {
+                return false;
+            },
+            format: function (s, _table) {
+                return s.split("###")[0];
+            },
+            type: "numeric",
+            parsed: false,
+        });
         $("#players").tablesorter({
             sortInitialOrder: "desc",
             sortList: [
@@ -296,8 +310,7 @@ function main() {
                 2: { sorter: "string", sortInitialOrder: "asc" },
                 3: { sorter: "string", sortInitialOrder: "desc" },
                 4: { sorter: false, parser: false },
-                5: { sorter: "date", parser: "isoDate" },
-                6: { lockedOrder: "asc" },
+                5: { sorter: "rangesort" },
             },
         });
         yield loadAndRender();
