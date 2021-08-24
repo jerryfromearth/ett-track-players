@@ -239,7 +239,7 @@ function renderPlayersData(playersOld, players) {
             player.online === undefined
                 ? "⌛"
                 : `${player.online === true
-                    ? "Online (" + player.device + ")"
+                    ? player.device
                     : "<span class='hidden'>" +
                         player.lastOnline +
                         "###</span><span title='" +

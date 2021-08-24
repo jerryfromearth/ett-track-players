@@ -284,7 +284,7 @@ function renderPlayersData(playersOld: Player[], players: Player[]) {
         ? "⌛"
         : `${
             player.online === true
-              ? "Online (" + player.device + ")"
+              ? player.device
               : "<span class='hidden'>" +
                 player.lastOnline +
                 "###</span><span title='" +
