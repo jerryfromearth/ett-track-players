@@ -10,17 +10,17 @@ const cellsTemplate = [
   "online",
 ];
 class Player {
-  id: Number;
-  name: String;
-  ELO: Number;
-  rank: Number;
-  online?: Boolean;
+  id: number;
+  name: string;
+  ELO: number;
+  rank: number;
+  online?: boolean;
   lastOnline: number;
-  device?: String;
-  ranked?: Boolean;
-  opponent?: String;
-  opponentid?: Number;
-  opponentELO?: Number;
+  device?: string;
+  ranked?: boolean;
+  opponent?: string;
+  opponentid?: number;
+  opponentELO?: number;
 
   constructor(json: any) {
     let data = json.data;
@@ -93,9 +93,9 @@ class Player {
 
 let players: Player[] = [];
 
-let playerIds_tracked: Number[] = [];
+let playerIds_tracked: number[] = [];
 
-function updateInfo(info: String) {
+function updateInfo(info: string) {
   let element = document.getElementById("info")! as unknown as HTMLDivElement;
   element.innerHTML = info.toString();
 }
