@@ -137,8 +137,12 @@ async function loadPlayersData() {
     );
   }
 
+  // TODO: Use this if tracker is served through https
+  // let online_promise = fetch(
+  //   "https://api.codetabs.com/v1/proxy/?quest=http://elevenlogcollector-env.js6z6tixhb.us-west-2.elasticbeanstalk.com/ElevenServerLiteSnapshot"
+  // );
   let online_promise = fetch(
-    "https://api.codetabs.com/v1/proxy/?quest=http://elevenlogcollector-env.js6z6tixhb.us-west-2.elasticbeanstalk.com/ElevenServerLiteSnapshot"
+    "http://elevenlogcollector-env.js6z6tixhb.us-west-2.elasticbeanstalk.com/ElevenServerLiteSnapshot"
   );
 
   for (const promise of promises) {

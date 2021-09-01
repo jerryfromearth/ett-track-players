@@ -122,7 +122,7 @@ function loadPlayersData() {
         for (const id_tracked of playerIds_tracked) {
             promises.push(fetch(`https://www.elevenvr.club/accounts/${id_tracked.toString()}`));
         }
-        let online_promise = fetch("https://api.codetabs.com/v1/proxy/?quest=http://elevenlogcollector-env.js6z6tixhb.us-west-2.elasticbeanstalk.com/ElevenServerLiteSnapshot");
+        let online_promise = fetch("http://elevenlogcollector-env.js6z6tixhb.us-west-2.elasticbeanstalk.com/ElevenServerLiteSnapshot");
         for (const promise of promises) {
             try {
                 let response = yield promise;
