@@ -1,0 +1,37 @@
+html,
+body {
+  border-color: #736b5e;
+  color: #e8e6e3;
+
+  background-color: #202324;
+  text-align: left;
+}
+
+a {
+  color: #3391ff;
+}
+
+.loading {
+  background-color: #801b1b;
+}
+
+#players > tbody > tr.online > td,
+#players > tbody > tr.online:hover > td {
+  background-color: #193b02;
+}
+
+#players > tbody > tr:hover > td {
+  background-color: #0d0e0c;
+}
+
+.ranked {
+  color: #ff6600;
+}
+
+#players {
+  font: 14px/20px Arial, Sans-serif;
+}
+
+.hidden {
+  display: none;
+}
