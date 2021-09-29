@@ -1,5 +1,4 @@
 const DEBUG = false;
-
 const cellsTemplate = [
   "links",
   "id",
@@ -93,19 +92,24 @@ class Player {
 
 let players: Player[] = [];
 
-let playerIds_tracked: number[] = [];
-
+function updateCountdown(countdown: string) {
+  let element = document.getElementById(
+    "countdown"
+  )! as unknown as HTMLDivElement;
+  element.innerHTML = countdown.toString();
+}
 function updateInfo(info: string) {
   let element = document.getElementById("info")! as unknown as HTMLDivElement;
   element.innerHTML = info.toString();
 }
 
 async function loadPlayerList() {
+  players = [];
+
+  let playerIds_tracked = [];
   try {
     if (DEBUG) {
-      playerIds_tracked = [
-        4001, 4002, 4003, 4007, 4006, 4005, 4010, 4008, 4009,
-      ];
+      playerIds_tracked = [648979, 143648, 104494, 632891, 42092];
     } else {
       let response = await fetch("./players.json");
       let json = await response.json();
@@ -113,28 +117,27 @@ async function loadPlayerList() {
     }
   } catch (err) {
     console.error(err);
-    updateInfo(`Error: Failed to fetch player list. ${err}`);
+    updateCountdown(`Error: Failed to fetch player list. ${err}`);
   }
-}
-async function init() {
-  await loadPlayerList();
-
-  players = [];
-  updateInfo("");
 
   for (let playerId of playerIds_tracked) {
     let player = new Player({ data: { id: playerId.toString() } });
     players.push(player);
   }
 }
+async function init() {
+  await loadPlayerList();
+
+  updateCountdown("");
+
+  renderPlayersData(players);
+}
 
 async function loadPlayersData() {
   console.log("Fetching these users:");
   let promises: Promise<Response>[] = [];
-  for (const id_tracked of playerIds_tracked) {
-    promises.push(
-      fetch(`https://www.elevenvr.club/accounts/${id_tracked.toString()}`)
-    );
+  for (const id of players.map((player) => player.id)) {
+    promises.push(fetch(`https://www.elevenvr.club/accounts/${id.toString()}`));
   }
 
   // TODO: Use this if tracker is served through https
@@ -145,38 +148,168 @@ async function loadPlayersData() {
     "http://elevenlogcollector-env.js6z6tixhb.us-west-2.elasticbeanstalk.com/ElevenServerLiteSnapshot"
   );
 
-  for (const promise of promises) {
-    try {
-      let response = await promise;
-      let json = await response.json();
-      let player = players.filter(
-        (player) => player.id.toString() === json.data.id
-      )[0];
-      player.fillName(json);
-      console.log(`Received ${player.name} account info`);
-    } catch (err) {
-      console.error(err);
-      updateInfo(`Error: Failed to fetch player info. ${err}`);
-    }
-  }
-
   // Fill in online status
   try {
     let online_response = await online_promise;
     let json = await online_response.json();
 
-    for (const player of players) {
-      player.fillOnlineInfo(json);
+    // Filter json to only include tracked players
+    let playerIdsAsStrings = players.map((player) => player.id.toString());
+    json.OnlineUses = json.OnlineUses.filter((OnlineUse: any) => {
+      return playerIdsAsStrings.includes(OnlineUse.Id);
+    });
+    json.UsersInRooms = json.UsersInRooms.filter((UserInRoom: any) => {
+      return playerIdsAsStrings.includes(UserInRoom.Id);
+    });
+    json.Rooms = json.Rooms.filter((Room: any) => {
+      for (const playerIdAsString of playerIdsAsStrings) {
+        if (
+          Room.Players.map((RoomPlayer: any) => RoomPlayer.Id).includes(
+            playerIdAsString
+          )
+        ) {
+          return true;
+        }
+      }
+      return false;
+    });
+
+    for (let id = 0; id < players.length; id++) {
+      players[id].fillOnlineInfo(json);
+      renderPlayerData(players[id]);
     }
-    console.log(`Received online info`);
   } catch (err) {
     console.error(err);
-    updateInfo(`Error: Failed to fetch live snapshot. ${err}`);
+    updateCountdown(`Error: Failed to fetch live snapshot. ${err}`);
   }
+
+  await Promise.allSettled(
+    promises.map(async (promise) => {
+      try {
+        let response = await promise;
+        let json = await response.json();
+        let player = players.filter(
+          (player) => player.id.toString() === json.data.id
+        )[0];
+        player.fillName(json);
+        renderPlayerData(player);
+        console.log(`Received ${player.name} account info`);
+      } catch (err) {
+        console.error(err);
+        updateCountdown(`Error: Failed to fetch player info. ${err}`);
+      }
+    })
+  );
+
+  // Sort table
+  $("#players").trigger("appendCache");
+  $("#players").trigger("update");
 }
 
-function renderPlayersData(playersOld: Player[], players: Player[]) {
-  // re-render players
+function renderPlayerData(player: Player) {
+  //console.log("rendering", player);
+
+  let table = document.getElementById("players") as unknown as HTMLTableElement;
+  let tbody = table.tBodies[0];
+
+  // Find out the id of player in the table
+  let playerRowId = 0;
+  for (playerRowId = 0; playerRowId < players.length; playerRowId++) {
+    if (
+      tbody.rows[playerRowId].getAttribute("id") ===
+      `player-${player.id.toString()}`
+    ) {
+      break;
+    }
+  }
+
+  let row = tbody.rows[playerRowId];
+
+  // Remove class set from the previous iteration
+  $(`#players tbody tr:nth-child(${playerRowId + 1})`).removeClass("online");
+
+  if (player.online) {
+    $(`#players tbody tr:nth-child(${playerRowId + 1})`).addClass("online");
+  }
+
+  row.cells[0].innerHTML = `<a href="https://beta.11-stats.com/stats/${player.id}/statistics" target="_blank">📈</a>`;
+  row.cells[1].innerHTML = `<a href="https://www.elevenvr.net/eleven/${player.id}" target="_blank">${player.id}</a>`;
+  row.cells[2].innerHTML = player.name === undefined ? "⌛" : `${player.name}`;
+  row.cells[3].innerHTML =
+    player.ELO === undefined
+      ? "⌛"
+      : `${player.ELO}${
+          player.rank <= 1000 ? " (#" + player.rank.toString() + ")" : ""
+        }`;
+
+  let opponent_str = "";
+  if (player.opponent !== undefined) {
+    opponent_str = `<a href="https://www.elevenvr.net/eleven/${
+      player.opponentid
+    }" target='_blank'>${player.opponent}</a> <span class="${
+      player.ranked ? "ranked" : "unranked"
+    }">(${player.opponentELO})<span><a href="https://www.elevenvr.net/matchup/${
+      player.id
+    }/${player.opponentid}" target='_blank'>⚔️</a></th></tr>`;
+  }
+  row.cells[4].innerHTML =
+    player.opponent === undefined ? "" : `${opponent_str}`;
+
+  function getTimeDifferenceString(current: number, previous: number) {
+    var msPerMinute = 60 * 1000;
+    var msPerHour = msPerMinute * 60;
+    var msPerDay = msPerHour * 24;
+    var msPerMonth = msPerDay * 30;
+    var msPerYear = msPerDay * 365;
+
+    var elapsed = current - previous;
+
+    if (elapsed < msPerMinute) {
+      return Math.round(elapsed / 1000) + " seconds ago";
+    } else if (elapsed < msPerHour) {
+      return Math.round(elapsed / msPerMinute) + " minutes ago";
+    } else if (elapsed < msPerDay) {
+      return Math.round(elapsed / msPerHour) + " hours ago";
+    } else if (elapsed < msPerMonth) {
+      return "approximately " + Math.round(elapsed / msPerDay) + " days ago";
+    } else if (elapsed < msPerYear) {
+      return (
+        "approximately " + Math.round(elapsed / msPerMonth) + " months ago"
+      );
+    } else {
+      return "approximately " + Math.round(elapsed / msPerYear) + " years ago";
+    }
+  }
+
+  var options: Intl.DateTimeFormatOptions = {
+    timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+    timeZoneName: "short",
+  };
+
+  row.cells[5].innerHTML =
+    player.online === undefined
+      ? "⌛"
+      : `${
+          player.online === true
+            ? player.device
+            : "<span class='hidden'>" +
+              player.lastOnline +
+              "###</span><span title='" +
+              getTimeDifferenceString(Date.now(), player.lastOnline) +
+              "'>" +
+              new Date(player.lastOnline).toLocaleString(undefined, options) +
+              "</span>"
+        }`;
+
+  row.cells[5].setAttribute("data-timestamp", player.lastOnline.toString());
+
+  row.cells[6].innerHTML =
+    player.online === undefined
+      ? "⌛"
+      : `${player.online === true ? "✔️" : "❌"}`;
+}
+
+function renderPlayersData(players: Player[]) {
   let shouldCreateRows = false;
   let table = document.getElementById("players") as unknown as HTMLTableElement;
   let tbody = table.tBodies[0];
@@ -184,139 +317,32 @@ function renderPlayersData(playersOld: Player[], players: Player[]) {
     shouldCreateRows = true;
   }
 
-  for (let playerId = 0; playerId < players.length; playerId++) {
-    let playerOld = playersOld[playerId];
-    let player = players[playerId];
-    let changed = false; // Whether playerOld and player are different
-    //console.log(JSON.stringify(player, null, 2));
-
-    // Determine "changed"
-    let stringOld = JSON.stringify(playerOld);
-    let stringNew = JSON.stringify(player);
-    if (stringOld.localeCompare(stringNew) === 0) changed = false;
-    else changed = true;
-    console.log(`player ${player.name} has ${changed ? "" : "NOT "}changed!`);
-    console.log(`old: ${stringOld}`);
-    console.log(`new: ${stringNew}`);
-
-    // Remove class set from the previous iteration
-    $(`#players tbody tr:nth-child(${playerId + 1})`).removeClass("online");
-
-    let row: HTMLTableRowElement;
-    if (shouldCreateRows) {
+  let row: HTMLTableRowElement;
+  if (shouldCreateRows) {
+    for (let player of players) {
       row = tbody.insertRow(-1);
       for (let cellId = 0; cellId < cellsTemplate.length; cellId++) {
         row.insertCell();
+        row.setAttribute("id", `player-${player.id.toString()}`);
       }
       row.cells[6].classList.add("hidden");
-    } else row = tbody.rows[playerId];
-
-    if (changed == true && shouldCreateRows === false) {
-      // $(`#players tbody tr:nth-child(${playerId + 1})`).addClass("loading");
-      $(`#players tbody tr:nth-child(${playerId + 1})`)
-        .fadeOut(500)
-        .fadeIn(500)
-        .fadeOut(500)
-        .fadeIn(500);
     }
-
-    if (player.online) {
-      $(`#players tbody tr:nth-child(${playerId + 1})`).addClass("online");
-    }
-
-    row.cells[0].innerHTML = `<a href="https://beta.11-stats.com/stats/${player.id}/statistics" target="_blank">📈</a>`;
-    row.cells[1].innerHTML = `<a href="https://www.elevenvr.net/eleven/${player.id}" target="_blank">${player.id}</a>`;
-    row.cells[2].innerHTML =
-      player.name === undefined ? "⌛" : `${player.name}`;
-    row.cells[3].innerHTML =
-      player.ELO === undefined
-        ? "⌛"
-        : `${player.ELO}${
-            player.rank <= 1000 ? " (#" + player.rank.toString() + ")" : ""
-          }`;
-
-    let opponent_str = "";
-    if (player.opponent !== undefined) {
-      opponent_str = `<a href="https://www.elevenvr.net/eleven/${
-        player.opponentid
-      }" target='_blank'>${player.opponent}</a> <span class="${
-        player.ranked ? "ranked" : "unranked"
-      }">(${
-        player.opponentELO
-      })<span><a href="https://www.elevenvr.net/matchup/${player.id}/${
-        player.opponentid
-      }" target='_blank'>⚔️</a></th></tr>`;
-    }
-    row.cells[4].innerHTML =
-      player.opponent === undefined ? "" : `${opponent_str}`;
-
-    function getTimeDifferenceString(current: number, previous: number) {
-      var msPerMinute = 60 * 1000;
-      var msPerHour = msPerMinute * 60;
-      var msPerDay = msPerHour * 24;
-      var msPerMonth = msPerDay * 30;
-      var msPerYear = msPerDay * 365;
-
-      var elapsed = current - previous;
-
-      if (elapsed < msPerMinute) {
-        return Math.round(elapsed / 1000) + " seconds ago";
-      } else if (elapsed < msPerHour) {
-        return Math.round(elapsed / msPerMinute) + " minutes ago";
-      } else if (elapsed < msPerDay) {
-        return Math.round(elapsed / msPerHour) + " hours ago";
-      } else if (elapsed < msPerMonth) {
-        return "approximately " + Math.round(elapsed / msPerDay) + " days ago";
-      } else if (elapsed < msPerYear) {
-        return (
-          "approximately " + Math.round(elapsed / msPerMonth) + " months ago"
-        );
-      } else {
-        return (
-          "approximately " + Math.round(elapsed / msPerYear) + " years ago"
-        );
-      }
-    }
-
-    var options: Intl.DateTimeFormatOptions = {
-      timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-      timeZoneName: "short",
-    };
-
-    row.cells[5].innerHTML =
-      player.online === undefined
-        ? "⌛"
-        : `${
-            player.online === true
-              ? player.device
-              : "<span class='hidden'>" +
-                player.lastOnline +
-                "###</span><span title='" +
-                getTimeDifferenceString(Date.now(), player.lastOnline) +
-                "'>" +
-                new Date(player.lastOnline).toLocaleString(undefined, options) +
-                "</span>"
-          }`;
-
-    row.cells[5].setAttribute("data-timestamp", player.lastOnline.toString());
-
-    row.cells[6].innerHTML =
-      player.online === undefined
-        ? "⌛"
-        : `${player.online === true ? "✔️" : "❌"}`;
   }
 
-  // Sort table
-  $("#players").trigger("update");
-  $("#players").trigger("appendCache");
+  for (let playerId = 0; playerId < players.length; playerId++) {
+    let player = players[playerId];
+    renderPlayerData(player);
+  }
 }
 
 function preLoading() {
-  updateInfo(`Loading...`);
+  updateCountdown(`Loading...`);
 }
 
 function postLoading() {
-  updateInfo(`Loaded. Rendering...`);
+  updateCountdown(`Loaded. Rendering...`);
+
+  updateInfo(`Total Players: ${players.length}`);
 }
 
 async function loadAndRender() {
@@ -329,14 +355,14 @@ async function loadAndRender() {
   await loadPlayersData();
   postLoading();
 
-  renderPlayersData(playersOld, players);
+  //renderPlayersData(playersOld, players);
 }
 
 const refreshInterval = DEBUG ? 10 : 60; // seconds
 let seconds = refreshInterval;
 
-function updateTimerInfo() {
-  updateInfo(`Updating in ${seconds} seconds`);
+function countdownTimerCallback() {
+  updateCountdown(`Updating in ${seconds} seconds`);
   if (seconds == 1) {
     seconds = refreshInterval;
   } else {
@@ -386,7 +412,7 @@ async function main() {
 
   setInterval(loadAndRender, refreshInterval * 1000);
 
-  setInterval(updateTimerInfo, 1000);
+  setInterval(countdownTimerCallback, 1000);
 }
 (async () => {
   await init();

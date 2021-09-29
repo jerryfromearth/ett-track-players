@@ -35,3 +35,7 @@ a {
 .hidden {
   display: none;
 }
+#countdown,
+#info {
+  display: block;
+}
