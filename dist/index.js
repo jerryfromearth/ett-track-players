@@ -118,6 +118,10 @@ function init() {
         renderPlayersData(players);
     });
 }
+function sortPlayersTable() {
+    $("#players").trigger("appendCache");
+    $("#players").trigger("update");
+}
 function loadPlayersData() {
     return __awaiter(this, void 0, void 0, function* () {
         console.log("Fetching these users:");
@@ -153,6 +157,7 @@ function loadPlayersData() {
             console.error(err);
             updateCountdown(`Error: Failed to fetch live snapshot. ${err}`);
         }
+        sortPlayersTable();
         yield Promise.allSettled(promises.map((promise) => __awaiter(this, void 0, void 0, function* () {
             try {
                 let response = yield promise;
@@ -167,8 +172,7 @@ function loadPlayersData() {
                 updateCountdown(`Error: Failed to fetch player info. ${err}`);
             }
         })));
-        $("#players").trigger("appendCache");
-        $("#players").trigger("update");
+        sortPlayersTable();
     });
 }
 function renderPlayerData(player) {

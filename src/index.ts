@@ -133,6 +133,12 @@ async function init() {
   renderPlayersData(players);
 }
 
+function sortPlayersTable() {
+  // Sort table
+  $("#players").trigger("appendCache");
+  $("#players").trigger("update");
+}
+
 async function loadPlayersData() {
   console.log("Fetching these users:");
   let promises: Promise<Response>[] = [];
@@ -183,6 +189,8 @@ async function loadPlayersData() {
     updateCountdown(`Error: Failed to fetch live snapshot. ${err}`);
   }
 
+  sortPlayersTable();
+
   await Promise.allSettled(
     promises.map(async (promise) => {
       try {
@@ -201,9 +209,7 @@ async function loadPlayersData() {
     })
   );
 
-  // Sort table
-  $("#players").trigger("appendCache");
-  $("#players").trigger("update");
+  sortPlayersTable();
 }
 
 function renderPlayerData(player: Player) {
