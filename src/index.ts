@@ -147,12 +147,20 @@ async function loadPlayersData() {
   }
 
   // TODO: Use this if tracker is served through https
-  // let online_promise = fetch(
-  //   "https://api.codetabs.com/v1/proxy/?quest=http://elevenlogcollector-env.js6z6tixhb.us-west-2.elasticbeanstalk.com/ElevenServerLiteSnapshot"
-  // );
-  let online_promise = fetch(
-    "http://elevenlogcollector-env.js6z6tixhb.us-west-2.elasticbeanstalk.com/ElevenServerLiteSnapshot"
-  );
+  let online_promise: Promise<Response> = new Promise<Response>(() => {});
+  if (window.location.protocol === "https:") {
+    // https://www.whateverorigin.org/get?url=http://elevenlogcollector-env.js6z6tixhb.us-west-2.elasticbeanstalk.com/ElevenServerLiteSnapshot
+    // https://api.codetabs.com/v1/proxy/?quest=http://elevenlogcollector-env.js6z6tixhb.us-west-2.elasticbeanstalk.com/ElevenServerLiteSnapshot
+    online_promise = fetch(
+      "https://www.whateverorigin.org/get?url=http://elevenlogcollector-env.js6z6tixhb.us-west-2.elasticbeanstalk.com/ElevenServerLiteSnapshot"
+    );
+  } else if (window.location.protocol === "http:") {
+    online_promise = fetch(
+      "http://elevenlogcollector-env.js6z6tixhb.us-west-2.elasticbeanstalk.com/ElevenServerLiteSnapshot"
+    );
+  } else {
+    console.error(`Unsupported protocol: ${window.location.protocol}`);
+  }
 
   // Fill in online status
   try {

@@ -129,7 +129,16 @@ function loadPlayersData() {
         for (const id of players.map((player) => player.id)) {
             promises.push(fetch(`https://www.elevenvr.club/accounts/${id.toString()}`));
         }
-        let online_promise = fetch("http://elevenlogcollector-env.js6z6tixhb.us-west-2.elasticbeanstalk.com/ElevenServerLiteSnapshot");
+        let online_promise = new Promise(() => { });
+        if (window.location.protocol === "https:") {
+            online_promise = fetch("https://www.whateverorigin.org/get?url=http://elevenlogcollector-env.js6z6tixhb.us-west-2.elasticbeanstalk.com/ElevenServerLiteSnapshot");
+        }
+        else if (window.location.protocol === "http:") {
+            online_promise = fetch("http://elevenlogcollector-env.js6z6tixhb.us-west-2.elasticbeanstalk.com/ElevenServerLiteSnapshot");
+        }
+        else {
+            console.error(`Unsupported protocol: ${window.location.protocol}`);
+        }
         try {
             let online_response = yield online_promise;
             let json = yield online_response.json();
