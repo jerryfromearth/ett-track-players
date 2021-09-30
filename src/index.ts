@@ -152,7 +152,7 @@ async function loadPlayersData() {
     // https://www.whateverorigin.org/get?url=http://elevenlogcollector-env.js6z6tixhb.us-west-2.elasticbeanstalk.com/ElevenServerLiteSnapshot
     // https://api.codetabs.com/v1/proxy/?quest=http://elevenlogcollector-env.js6z6tixhb.us-west-2.elasticbeanstalk.com/ElevenServerLiteSnapshot
     online_promise = fetch(
-      "https://www.whateverorigin.org/get?url=http://elevenlogcollector-env.js6z6tixhb.us-west-2.elasticbeanstalk.com/ElevenServerLiteSnapshot"
+      "https://api.codetabs.com/v1/proxy/?quest=http://elevenlogcollector-env.js6z6tixhb.us-west-2.elasticbeanstalk.com/ElevenServerLiteSnapshot"
     );
   } else if (window.location.protocol === "http:") {
     online_promise = fetch(
