@@ -58,7 +58,9 @@ class Player {
       (userInRoom: any) => userInRoom.Id === this.id.toString()
     );
     console.log(
-      `User ${this.name} is ${usersInRoom.length == 0 ? "NOT" : ""} in room`
+      `User ${this.name}(${this.id}) is ${
+        usersInRoom.length == 0 ? "NOT" : ""
+      } in room`
     );
 
     let rooms = json.Rooms.filter((room: any) => {
@@ -111,9 +113,27 @@ async function loadPlayerList() {
     if (DEBUG) {
       playerIds_tracked = [648979, 143648, 104494, 632891, 42092];
     } else {
-      let response = await fetch("./players.json");
-      let json = await response.json();
-      playerIds_tracked.push(...json.playerIds);
+      // If URL contains e.g. `ids=4008,144393`, use those ids. Otherwise use players.json
+      const urlParams = new URLSearchParams(window.location.search);
+      let ids = urlParams
+        .get("ids")
+        ?.split(",")
+        .map((id) => +id)
+        .filter((id) => !Number.isNaN(id));
+      ids = [...new Set(ids)];
+      if (ids && ids.length > 0) {
+        playerIds_tracked.push(...ids);
+      } else {
+        let response = await fetch("./players.json");
+        let json = await response.json();
+        playerIds_tracked.push(...json.playerIds);
+      }
+
+      window.history.replaceState(
+        "object or string",
+        "Title",
+        `?ids=${playerIds_tracked.join(",")}`
+      );
     }
   } catch (err) {
     console.error(err);
@@ -140,13 +160,7 @@ function sortPlayersTable() {
 }
 
 async function loadPlayersData() {
-  console.log("Fetching these users:");
-  let promises: Promise<Response>[] = [];
-  for (const id of players.map((player) => player.id)) {
-    promises.push(fetch(`https://www.elevenvr.club/accounts/${id.toString()}`));
-  }
-
-  // TODO: Use this if tracker is served through https
+  // Fetch online status snapshot
   let online_promise: Promise<Response> = new Promise<Response>(() => {});
   if (window.location.protocol === "https:") {
     // https://www.whateverorigin.org/get?url=http://elevenlogcollector-env.js6z6tixhb.us-west-2.elasticbeanstalk.com/ElevenServerLiteSnapshot
@@ -160,6 +174,13 @@ async function loadPlayersData() {
     );
   } else {
     console.error(`Unsupported protocol: ${window.location.protocol}`);
+  }
+
+  // Fetch each user's data (name, ELO, rank etc.)
+  console.log("Fetching these users:");
+  let promises: Promise<Response>[] = [];
+  for (const id of players.map((player) => player.id)) {
+    promises.push(fetch(`https://www.elevenvr.club/accounts/${id.toString()}`));
   }
 
   // Fill in online status
@@ -240,10 +261,10 @@ function renderPlayerData(player: Player) {
   let row = tbody.rows[playerRowId];
 
   // Remove class set from the previous iteration
-  $(`#players tbody tr:nth-child(${playerRowId + 1})`).removeClass("online");
+  $(`tr#player-${player.id.toString()}`).removeClass("online");
 
   if (player.online) {
-    $(`#players tbody tr:nth-child(${playerRowId + 1})`).addClass("online");
+    $(`tr#player-${player.id.toString()}`).addClass("online");
   }
 
   row.cells[0].innerHTML = `<a href="https://beta.11-stats.com/stats/${player.id}/statistics" target="_blank">📈</a>`;

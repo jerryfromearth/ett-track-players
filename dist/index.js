@@ -49,7 +49,7 @@ class Player {
             this.device = undefined;
         }
         let usersInRoom = json.UsersInRooms.filter((userInRoom) => userInRoom.Id === this.id.toString());
-        console.log(`User ${this.name} is ${usersInRoom.length == 0 ? "NOT" : ""} in room`);
+        console.log(`User ${this.name}(${this.id}) is ${usersInRoom.length == 0 ? "NOT" : ""} in room`);
         let rooms = json.Rooms.filter((room) => {
             let roomplayers = room.Players;
             for (let i = 0; i < roomplayers.length; i++) {
@@ -88,6 +88,7 @@ function updateInfo(info) {
     element.innerHTML = info.toString();
 }
 function loadPlayerList() {
+    var _a;
     return __awaiter(this, void 0, void 0, function* () {
         players = [];
         let playerIds_tracked = [];
@@ -96,9 +97,19 @@ function loadPlayerList() {
                 playerIds_tracked = [648979, 143648, 104494, 632891, 42092];
             }
             else {
-                let response = yield fetch("./players.json");
-                let json = yield response.json();
-                playerIds_tracked.push(...json.playerIds);
+                const urlParams = new URLSearchParams(window.location.search);
+                let ids = (_a = urlParams
+                    .get("ids")) === null || _a === void 0 ? void 0 : _a.split(",").map((id) => +id).filter((id) => !Number.isNaN(id));
+                ids = [...new Set(ids)];
+                if (ids && ids.length > 0) {
+                    playerIds_tracked.push(...ids);
+                }
+                else {
+                    let response = yield fetch("./players.json");
+                    let json = yield response.json();
+                    playerIds_tracked.push(...json.playerIds);
+                }
+                window.history.replaceState("object or string", "Title", `?ids=${playerIds_tracked.join(",")}`);
             }
         }
         catch (err) {
@@ -124,11 +135,6 @@ function sortPlayersTable() {
 }
 function loadPlayersData() {
     return __awaiter(this, void 0, void 0, function* () {
-        console.log("Fetching these users:");
-        let promises = [];
-        for (const id of players.map((player) => player.id)) {
-            promises.push(fetch(`https://www.elevenvr.club/accounts/${id.toString()}`));
-        }
         let online_promise = new Promise(() => { });
         if (window.location.protocol === "https:") {
             online_promise = fetch("https://api.codetabs.com/v1/proxy/?quest=http://elevenlogcollector-env.js6z6tixhb.us-west-2.elasticbeanstalk.com/ElevenServerLiteSnapshot");
@@ -138,6 +144,11 @@ function loadPlayersData() {
         }
         else {
             console.error(`Unsupported protocol: ${window.location.protocol}`);
+        }
+        console.log("Fetching these users:");
+        let promises = [];
+        for (const id of players.map((player) => player.id)) {
+            promises.push(fetch(`https://www.elevenvr.club/accounts/${id.toString()}`));
         }
         try {
             let online_response = yield online_promise;
@@ -195,9 +206,9 @@ function renderPlayerData(player) {
         }
     }
     let row = tbody.rows[playerRowId];
-    $(`#players tbody tr:nth-child(${playerRowId + 1})`).removeClass("online");
+    $(`tr#player-${player.id.toString()}`).removeClass("online");
     if (player.online) {
-        $(`#players tbody tr:nth-child(${playerRowId + 1})`).addClass("online");
+        $(`tr#player-${player.id.toString()}`).addClass("online");
     }
     row.cells[0].innerHTML = `<a href="https://beta.11-stats.com/stats/${player.id}/statistics" target="_blank">📈</a>`;
     row.cells[1].innerHTML = `<a href="https://www.elevenvr.net/eleven/${player.id}" target="_blank">${player.id}</a>`;
