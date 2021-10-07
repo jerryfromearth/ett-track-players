@@ -245,21 +245,13 @@ async function loadPlayersData() {
 }
 
 function renderPlayerData(player: Player) {
-  //console.log("rendering", player);
-
   let table = document.getElementById("players") as unknown as HTMLTableElement;
   let tbody = table.tBodies[0];
 
-  // Find out the id of player in the table
-  let playerRowId = 0;
-  for (playerRowId = 0; playerRowId < players.length; playerRowId++) {
-    if (
-      tbody.rows[playerRowId].getAttribute("id") ===
-      `player-${player.id.toString()}`
-    ) {
-      break;
-    }
-  }
+  // Find out the row id of player in the table
+  let playerRowId = [...tbody.rows].findIndex(
+    (row) => row.getAttribute("id") === `player-${player.id.toString()}`
+  );
 
   let row = tbody.rows[playerRowId];
 

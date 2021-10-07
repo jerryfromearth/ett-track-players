@@ -200,13 +200,7 @@ function loadPlayersData() {
 function renderPlayerData(player) {
     let table = document.getElementById("players");
     let tbody = table.tBodies[0];
-    let playerRowId = 0;
-    for (playerRowId = 0; playerRowId < players.length; playerRowId++) {
-        if (tbody.rows[playerRowId].getAttribute("id") ===
-            `player-${player.id.toString()}`) {
-            break;
-        }
-    }
+    let playerRowId = [...tbody.rows].findIndex((row) => row.getAttribute("id") === `player-${player.id.toString()}`);
     let row = tbody.rows[playerRowId];
     $(`tr#player-${player.id.toString()}`).removeClass("online");
     if (player.online) {
