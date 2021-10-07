@@ -43,6 +43,8 @@ class Player {
         if (users.length > 0) {
             this.online = true;
             this.device = users[0].Device;
+            this.name = users[0].UserName;
+            this.ELO = users[0].ELO;
         }
         else {
             this.online = false;
@@ -210,7 +212,10 @@ function renderPlayerData(player) {
     if (player.online) {
         $(`tr#player-${player.id.toString()}`).addClass("online");
     }
-    row.cells[0].innerHTML = `<a href="https://beta.11-stats.com/stats/${player.id}/statistics" target="_blank">📈</a>`;
+    $(document).on("click", `tr#player-${player.id.toString()} .matchupButton`, function () {
+        $(`tr#player-${player.id.toString()}`).addClass("online");
+    });
+    row.cells[0].innerHTML = `<a href="https://beta.11-stats.com/stats/${player.id}/statistics" target="_blank">📈</a><a style="display:none" class="matchupButton" href="#">⚔️</a><span class="matchupResult">&nbsp;</span>`;
     row.cells[1].innerHTML = `<a href="https://www.elevenvr.net/eleven/${player.id}" target="_blank">${player.id}</a>`;
     row.cells[2].innerHTML = player.name === undefined ? "⌛" : `${player.name}`;
     row.cells[3].innerHTML =
@@ -298,7 +303,7 @@ function preLoading() {
     updateCountdown(`Loading...`);
 }
 function postLoading() {
-    updateCountdown(`Loaded. Rendering...`);
+    updateCountdown(`Loaded.`);
     updateInfo(`Total Players: ${players.length}`);
 }
 function loadAndRender() {
