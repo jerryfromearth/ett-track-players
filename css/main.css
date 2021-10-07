@@ -39,3 +39,16 @@ a {
 #info {
   display: block;
 }
+tr > td:nth-child(1) {
+  border-left: 8px solid transparent;
+}
+
+tr.gold > td:nth-child(1) {
+  border-left: 8px solid gold;
+}
+tr.silver > td:nth-child(1) {
+  border-left: 8px solid silver;
+}
+tr.bronze > td:nth-child(1) {
+  border-left: 8px solid #bb8141;
+}

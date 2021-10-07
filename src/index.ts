@@ -161,6 +161,34 @@ function sortPlayersTable() {
   $("#players").trigger("update");
 }
 
+function MarkCertainPlayers() {
+  const rankColors = ["gold", "silver", "bronze"];
+
+  // Remove colors set from previous iteration
+  for (const color of rankColors) {
+    $(`td`).removeClass(color);
+  }
+
+  const playersSorted = [...players].sort(
+    (player1, player2) => player2.ELO - player1.ELO
+  );
+  console.log(playersSorted);
+  for (let rank = 0; rank < rankColors.length; rank++) {
+    let player = playersSorted[rank];
+    let table = document.getElementById(
+      "players"
+    ) as unknown as HTMLTableElement;
+    console.log(player);
+    let tbody = table.tBodies[0];
+    // Find out the row id of player in the table
+    let playerRowId = [...tbody.rows].findIndex(
+      (row) => row.getAttribute("id") === `player-${player.id.toString()}`
+    );
+    console.log(playerRowId);
+    $(`tr#player-${player.id.toString()}`).addClass(rankColors[rank]);
+  }
+}
+
 async function loadPlayersData() {
   // Fetch online status snapshot
   let online_promise: Promise<Response> = new Promise<Response>(() => {});
@@ -233,13 +261,16 @@ async function loadPlayersData() {
         )[0];
         player.fillName(json);
         renderPlayerData(player);
-        console.log(`Received ${player.name} account info`);
+        //console.log(`Received ${player.name} account info`);
       } catch (err) {
         console.error(err);
         updateCountdown(`Error: Failed to fetch player info. ${err}`);
       }
     })
   );
+
+  // Mark certain players
+  MarkCertainPlayers();
 
   sortPlayersTable();
 }

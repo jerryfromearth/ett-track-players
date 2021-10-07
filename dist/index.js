@@ -135,6 +135,23 @@ function sortPlayersTable() {
     $("#players").trigger("appendCache");
     $("#players").trigger("update");
 }
+function MarkCertainPlayers() {
+    const rankColors = ["gold", "silver", "bronze"];
+    for (const color of rankColors) {
+        $(`td`).removeClass(color);
+    }
+    const playersSorted = [...players].sort((player1, player2) => player2.ELO - player1.ELO);
+    console.log(playersSorted);
+    for (let rank = 0; rank < rankColors.length; rank++) {
+        let player = playersSorted[rank];
+        let table = document.getElementById("players");
+        console.log(player);
+        let tbody = table.tBodies[0];
+        let playerRowId = [...tbody.rows].findIndex((row) => row.getAttribute("id") === `player-${player.id.toString()}`);
+        console.log(playerRowId);
+        $(`tr#player-${player.id.toString()}`).addClass(rankColors[rank]);
+    }
+}
 function loadPlayersData() {
     return __awaiter(this, void 0, void 0, function* () {
         let online_promise = new Promise(() => { });
@@ -187,13 +204,13 @@ function loadPlayersData() {
                 let player = players.filter((player) => player.id.toString() === json.data.id)[0];
                 player.fillName(json);
                 renderPlayerData(player);
-                console.log(`Received ${player.name} account info`);
             }
             catch (err) {
                 console.error(err);
                 updateCountdown(`Error: Failed to fetch player info. ${err}`);
             }
         })));
+        MarkCertainPlayers();
         sortPlayersTable();
     });
 }
