@@ -161,31 +161,25 @@ function sortPlayersTable() {
   $("#players").trigger("update");
 }
 
-function MarkCertainPlayers() {
+function markCertainPlayers() {
   const rankColors = ["gold", "silver", "bronze"];
 
   // Remove colors set from previous iteration
   for (const color of rankColors) {
-    $(`td`).removeClass(color);
+    $(`#players tr`).removeClass(color);
   }
 
   const playersSorted = [...players].sort(
     (player1, player2) => player2.ELO - player1.ELO
   );
-  console.log(playersSorted);
-  for (let rank = 0; rank < rankColors.length; rank++) {
+
+  for (
+    let rank = 0;
+    rank < rankColors.length && rank < playersSorted.length;
+    rank++
+  ) {
     let player = playersSorted[rank];
-    let table = document.getElementById(
-      "players"
-    ) as unknown as HTMLTableElement;
-    console.log(player);
-    let tbody = table.tBodies[0];
-    // Find out the row id of player in the table
-    let playerRowId = [...tbody.rows].findIndex(
-      (row) => row.getAttribute("id") === `player-${player.id.toString()}`
-    );
-    console.log(playerRowId);
-    $(`tr#player-${player.id.toString()}`).addClass(rankColors[rank]);
+    $(`#players tr#player-${player.id.toString()}`).addClass(rankColors[rank]);
   }
 }
 
@@ -270,7 +264,7 @@ async function loadPlayersData() {
   );
 
   // Mark certain players
-  MarkCertainPlayers();
+  markCertainPlayers();
 
   sortPlayersTable();
 }

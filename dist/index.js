@@ -135,21 +135,15 @@ function sortPlayersTable() {
     $("#players").trigger("appendCache");
     $("#players").trigger("update");
 }
-function MarkCertainPlayers() {
+function markCertainPlayers() {
     const rankColors = ["gold", "silver", "bronze"];
     for (const color of rankColors) {
-        $(`td`).removeClass(color);
+        $(`#players tr`).removeClass(color);
     }
     const playersSorted = [...players].sort((player1, player2) => player2.ELO - player1.ELO);
-    console.log(playersSorted);
-    for (let rank = 0; rank < rankColors.length; rank++) {
+    for (let rank = 0; rank < rankColors.length && rank < playersSorted.length; rank++) {
         let player = playersSorted[rank];
-        let table = document.getElementById("players");
-        console.log(player);
-        let tbody = table.tBodies[0];
-        let playerRowId = [...tbody.rows].findIndex((row) => row.getAttribute("id") === `player-${player.id.toString()}`);
-        console.log(playerRowId);
-        $(`tr#player-${player.id.toString()}`).addClass(rankColors[rank]);
+        $(`#players tr#player-${player.id.toString()}`).addClass(rankColors[rank]);
     }
 }
 function loadPlayersData() {
@@ -210,7 +204,7 @@ function loadPlayersData() {
                 updateCountdown(`Error: Failed to fetch player info. ${err}`);
             }
         })));
-        MarkCertainPlayers();
+        markCertainPlayers();
         sortPlayersTable();
     });
 }
