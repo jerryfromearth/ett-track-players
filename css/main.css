@@ -62,11 +62,11 @@ tr.bronze > td:nth-child(1) {
 }
 @media screen and (min-width: 320px) {
   .id {
-    display: block;
+    display: table-cell;
   }
 }
 @media screen and (min-width: 768px) {
   .last-online {
-    display: block;
+    display: table-cell;
   }
 }
