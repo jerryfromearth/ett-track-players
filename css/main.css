@@ -52,3 +52,21 @@ tr.silver > td:nth-child(1) {
 tr.bronze > td:nth-child(1) {
   border-left: 8px solid #bb8141;
 }
+
+/* responsive */
+.last-online,
+.id {
+  display: none;
+}
+@media screen and (min-width: 200px) {
+}
+@media screen and (min-width: 320px) {
+  .id {
+    display: block;
+  }
+}
+@media screen and (min-width: 768px) {
+  .last-online {
+    display: block;
+  }
+}

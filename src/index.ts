@@ -95,6 +95,10 @@ class Player {
 }
 
 let players: Player[] = [];
+/**
+ * Hardcoded max player count to avoid abusing server.
+ */
+const maxPlayers = 100;
 
 function updateCountdown(countdown: string) {
   let element = document.getElementById(
@@ -143,8 +147,12 @@ async function loadPlayerList() {
   }
 
   for (let playerId of playerIds_tracked) {
-    let player = new Player({ data: { id: playerId.toString() } });
-    players.push(player);
+    if (players.length < maxPlayers) {
+      let player = new Player({ data: { id: playerId.toString() } });
+      players.push(player);
+    } else {
+      console.warn(`Players limit reached! Won't add ${playerId} to the list`);
+    }
   }
 }
 async function init() {
@@ -201,7 +209,6 @@ async function loadPlayersData() {
   }
 
   // Fetch each user's data (name, ELO, rank etc.)
-  console.log("Fetching these users:");
   let promises: Promise<Response>[] = [];
   for (const id of players.map((player) => player.id)) {
     promises.push(fetch(`https://www.elevenvr.club/accounts/${id.toString()}`));
@@ -298,6 +305,7 @@ function renderPlayerData(player: Player) {
 
   row.cells[0].innerHTML = `<a href="https://beta.11-stats.com/stats/${player.id}/statistics" target="_blank">📈</a><a style="display:none" class="matchupButton" href="#">⚔️</a><span class="matchupResult">&nbsp;</span>`;
   row.cells[1].innerHTML = `<a href="https://www.elevenvr.net/eleven/${player.id}" target="_blank">${player.id}</a>`;
+  row.cells[1].classList.add("id");
   row.cells[2].innerHTML = player.name === undefined ? "⌛" : `${player.name}`;
   row.cells[3].innerHTML =
     player.ELO === undefined
@@ -314,7 +322,7 @@ function renderPlayerData(player: Player) {
       player.ranked ? "ranked" : "unranked"
     }">(${player.opponentELO})<span><a href="https://www.elevenvr.net/matchup/${
       player.id
-    }/${player.opponentid}" target='_blank'>⚔️</a></th></tr>`;
+    }/${player.opponentid}" target='_blank'>⚔️</a>`;
   }
   row.cells[4].innerHTML =
     player.opponent === undefined ? "" : `${opponent_str}`;
@@ -366,6 +374,7 @@ function renderPlayerData(player: Player) {
         }`;
 
   row.cells[5].setAttribute("data-timestamp", player.lastOnline.toString());
+  row.cells[5].classList.add("last-online");
 
   row.cells[6].innerHTML =
     player.online === undefined
@@ -406,7 +415,11 @@ function preLoading() {
 function postLoading() {
   updateCountdown(`Loaded.`);
 
-  updateInfo(`Total Players: ${players.length}`);
+  updateInfo(
+    `Total Players: ${players.length} ${
+      players.length == maxPlayers ? "(Limit reached)" : ""
+    }`
+  );
 }
 
 async function loadAndRender() {

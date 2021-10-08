@@ -81,6 +81,7 @@ class Player {
     }
 }
 let players = [];
+const maxPlayers = 100;
 function updateCountdown(countdown) {
     let element = document.getElementById("countdown");
     element.innerHTML = countdown.toString();
@@ -119,8 +120,13 @@ function loadPlayerList() {
             updateCountdown(`Error: Failed to fetch player list. ${err}`);
         }
         for (let playerId of playerIds_tracked) {
-            let player = new Player({ data: { id: playerId.toString() } });
-            players.push(player);
+            if (players.length < maxPlayers) {
+                let player = new Player({ data: { id: playerId.toString() } });
+                players.push(player);
+            }
+            else {
+                console.warn(`Players limit reached! Won't add ${playerId} to the list`);
+            }
         }
     });
 }
@@ -158,7 +164,6 @@ function loadPlayersData() {
         else {
             console.error(`Unsupported protocol: ${window.location.protocol}`);
         }
-        console.log("Fetching these users:");
         let promises = [];
         for (const id of players.map((player) => player.id)) {
             promises.push(fetch(`https://www.elevenvr.club/accounts/${id.toString()}`));
@@ -222,6 +227,7 @@ function renderPlayerData(player) {
     });
     row.cells[0].innerHTML = `<a href="https://beta.11-stats.com/stats/${player.id}/statistics" target="_blank">📈</a><a style="display:none" class="matchupButton" href="#">⚔️</a><span class="matchupResult">&nbsp;</span>`;
     row.cells[1].innerHTML = `<a href="https://www.elevenvr.net/eleven/${player.id}" target="_blank">${player.id}</a>`;
+    row.cells[1].classList.add("id");
     row.cells[2].innerHTML = player.name === undefined ? "⌛" : `${player.name}`;
     row.cells[3].innerHTML =
         player.ELO === undefined
@@ -229,7 +235,7 @@ function renderPlayerData(player) {
             : `${player.ELO}${player.rank <= 1000 ? " (#" + player.rank.toString() + ")" : ""}`;
     let opponent_str = "";
     if (player.opponent !== undefined) {
-        opponent_str = `<a href="https://www.elevenvr.net/eleven/${player.opponentid}" target='_blank'>${player.opponent}</a> <span class="${player.ranked ? "ranked" : "unranked"}">(${player.opponentELO})<span><a href="https://www.elevenvr.net/matchup/${player.id}/${player.opponentid}" target='_blank'>⚔️</a></th></tr>`;
+        opponent_str = `<a href="https://www.elevenvr.net/eleven/${player.opponentid}" target='_blank'>${player.opponent}</a> <span class="${player.ranked ? "ranked" : "unranked"}">(${player.opponentELO})<span><a href="https://www.elevenvr.net/matchup/${player.id}/${player.opponentid}" target='_blank'>⚔️</a>`;
     }
     row.cells[4].innerHTML =
         player.opponent === undefined ? "" : `${opponent_str}`;
@@ -276,6 +282,7 @@ function renderPlayerData(player) {
                     new Date(player.lastOnline).toLocaleString(undefined, options) +
                     "</span>"}`;
     row.cells[5].setAttribute("data-timestamp", player.lastOnline.toString());
+    row.cells[5].classList.add("last-online");
     row.cells[6].innerHTML =
         player.online === undefined
             ? "⌛"
@@ -309,7 +316,7 @@ function preLoading() {
 }
 function postLoading() {
     updateCountdown(`Loaded.`);
-    updateInfo(`Total Players: ${players.length}`);
+    updateInfo(`Total Players: ${players.length} ${players.length == maxPlayers ? "(Limit reached)" : ""}`);
 }
 function loadAndRender() {
     return __awaiter(this, void 0, void 0, function* () {
