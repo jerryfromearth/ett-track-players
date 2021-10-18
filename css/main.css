@@ -40,17 +40,17 @@ a {
   display: block;
 }
 tr > td:nth-child(1) {
-  border-left: 8px solid transparent;
+  border-left: 4px solid transparent;
 }
 
 tr.gold > td:nth-child(1) {
-  border-left: 8px solid gold;
+  border-left: 4px solid gold;
 }
 tr.silver > td:nth-child(1) {
-  border-left: 8px solid silver;
+  border-left: 4px solid silver;
 }
 tr.bronze > td:nth-child(1) {
-  border-left: 8px solid #bb8141;
+  border-left: 4px solid #bb8141;
 }
 
 /* responsive */
