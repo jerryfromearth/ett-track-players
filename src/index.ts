@@ -143,7 +143,10 @@ async function loadPlayerList() {
     }
   } catch (err) {
     console.error(err);
-    updateCountdown(`Error: Failed to fetch player list. ${err}`);
+    updateCountdown(
+      `Error: Failed to fetch player list. Please either use "?ids=" parameter, or place a file called "players.json" in the source folder.\n${err}`
+    );
+    throw err;
   }
 
   for (let playerId of playerIds_tracked) {
