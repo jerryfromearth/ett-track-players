@@ -476,7 +476,7 @@ async function main() {
     sortInitialOrder: "desc",
     sortList: [
       [6, 0],
-      [2, 0],
+      [3, 1],
     ],
     headers: {
       0: { sorter: false, parser: false },
