@@ -306,10 +306,13 @@ function renderPlayerData(player: Player) {
     }
   );
 
-  row.cells[0].innerHTML = `<a title="ETT website" href="https://www.elevenvr.net/eleven/${player.id}" target="_blank">🖥️</a><a title="statistics" href="https://beta.11-stats.com/stats/${player.id}/statistics" target="_blank">📈</a><a style="display:none" class="matchupButton" href="#">⚔️</a><span class="matchupResult">&nbsp;</span>`;
+  row.cells[0].innerHTML = `<a title="statistics" href="https://beta.11-stats.com/stats/${player.id}/statistics" target="_blank">📈</a><a style="display:none" class="matchupButton" href="#">⚔️</a><span class="matchupResult">&nbsp;</span>`;
   row.cells[1].innerHTML = `<a href="https://www.elevenvr.net/eleven/${player.id}" target="_blank">${player.id}</a>`;
   row.cells[1].classList.add("id");
-  row.cells[2].innerHTML = player.name === undefined ? "⌛" : `${player.name}`;
+  row.cells[2].innerHTML =
+    player.name === undefined
+      ? "⌛"
+      : `<a title="ETT website" href="https://www.elevenvr.net/eleven/${player.id}" target="_blank">${player.name}</a>`;
   row.cells[3].innerHTML =
     player.ELO === undefined
       ? "⌛"
