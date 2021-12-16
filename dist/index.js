@@ -44,7 +44,7 @@ class Player {
             this.online = true;
             this.device = users[0].Device;
             this.name = users[0].UserName;
-            this.ELO = users[0].ELO;
+            this.ELO = Math.floor(users[0].ELO);
         }
         else {
             this.online = false;
@@ -241,10 +241,10 @@ function renderPlayerData(player) {
                 : ""}`;
     let opponent_str = "";
     if (player.opponent !== undefined) {
-        opponent_str = `<a href="https://www.elevenvr.net/eleven/${player.opponentid}" target='_blank'>${player.opponent}</a> <span class="${player.ranked ? "ranked" : "unranked"}">(${player.opponentELO})<span><a title="matchup" href="https://www.elevenvr.net/matchup/${player.id}/${player.opponentid}" target='_blank'>⚔️</a><a title="scoreboard" href="https://cristy94.github.io/eleven-vr-scoreboard/?user=${player.id}&rowsReversed=0&home-offset=0&away-offset=0" target='_blank'>🔍</a>`;
+        opponent_str = `<a href="https://www.elevenvr.net/eleven/${player.opponentid}" target='_blank'>${player.opponent}</a> <span class="${player.ranked ? "ranked" : "unranked"}">(${player.opponentELO})<span><a title="matchup" href="https://www.elevenvr.net/matchup/${player.id}/${player.opponentid}" target='_blank'>⚔️</a>`;
     }
-    row.cells[4].innerHTML =
-        player.opponent === undefined ? "" : `${opponent_str}`;
+    opponent_str += `<a title="scoreboard" class="scoreboard" href="https://cristy94.github.io/eleven-vr-scoreboard/?user=${player.id}&rowsReversed=0&home-offset=0&away-offset=0" target='_blank'>🔍</a>`;
+    row.cells[4].innerHTML = opponent_str;
     function getTimeDifferenceString(current, previous) {
         var msPerMinute = 60 * 1000;
         var msPerHour = msPerMinute * 60;
