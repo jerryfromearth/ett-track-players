@@ -11,6 +11,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 const DEBUG = false;
 const cellsTemplate = [
     "links",
+    "rank",
     "id",
     "name",
     "elo",
@@ -148,9 +149,12 @@ function markCertainPlayers() {
         $(`#players tr`).removeClass(color);
     }
     const playersSorted = [...players].sort((player1, player2) => player2.ELO - player1.ELO);
-    for (let rank = 0; rank < rankColors.length && rank < playersSorted.length; rank++) {
+    for (let rank = 0; rank < playersSorted.length; rank++) {
         let player = playersSorted[rank];
-        $(`#players tr#player-${player.id.toString()}`).addClass(rankColors[rank]);
+        if (rank < rankColors.length) {
+            $(`#players tr#player-${player.id.toString()}`).addClass(rankColors[rank]);
+        }
+        $(`#players tr#player-${player.id.toString()} td.rank`).html((rank + 1).toString());
     }
 }
 function loadPlayersData() {
@@ -227,13 +231,15 @@ function renderPlayerData(player) {
         $(`tr#player-${player.id.toString()}`).addClass("online");
     });
     row.cells[0].innerHTML = `<a title="statistics" href="https://beta.11-stats.com/stats/${player.id}/statistics" target="_blank">📈</a><a style="display:none" class="matchupButton" href="#">⚔️</a><span class="matchupResult">&nbsp;</span>`;
-    row.cells[1].innerHTML = `<a href="https://www.elevenvr.net/eleven/${player.id}" target="_blank">${player.id}</a>`;
-    row.cells[1].classList.add("id");
-    row.cells[2].innerHTML =
+    row.cells[1].innerHTML = `⌛`;
+    row.cells[1].classList.add("rank");
+    row.cells[2].innerHTML = `<a href="https://www.elevenvr.net/eleven/${player.id}" target="_blank">${player.id}</a>`;
+    row.cells[2].classList.add("id");
+    row.cells[3].innerHTML =
         player.name === undefined
             ? "⌛"
             : `<a title="ETT website" href="https://www.elevenvr.net/eleven/${player.id}" target="_blank">${player.name}</a>`;
-    row.cells[3].innerHTML =
+    row.cells[4].innerHTML =
         player.ELO === undefined
             ? "⌛"
             : `${player.ELO}${player.rank <= 1000 && player.rank > 0
@@ -244,7 +250,7 @@ function renderPlayerData(player) {
         opponent_str = `<a href="https://www.elevenvr.net/eleven/${player.opponentid}" target='_blank'>${player.opponent}</a> <span class="${player.ranked ? "ranked" : "unranked"}">(${player.opponentELO})<span><a title="matchup" href="https://www.elevenvr.net/matchup/${player.id}/${player.opponentid}" target='_blank'>⚔️</a>`;
     }
     opponent_str += `<a title="scoreboard" class="scoreboard" href="https://cristy94.github.io/eleven-vr-scoreboard/?user=${player.id}&rowsReversed=0&home-offset=0&away-offset=0" target='_blank'>🔍</a>`;
-    row.cells[4].innerHTML = opponent_str;
+    row.cells[5].innerHTML = opponent_str;
     function getTimeDifferenceString(current, previous) {
         var msPerMinute = 60 * 1000;
         var msPerHour = msPerMinute * 60;
@@ -275,7 +281,7 @@ function renderPlayerData(player) {
         timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
         timeZoneName: "short",
     };
-    row.cells[5].innerHTML =
+    row.cells[6].innerHTML =
         player.online === undefined
             ? "⌛"
             : `${player.online === true
@@ -287,9 +293,9 @@ function renderPlayerData(player) {
                     "'>" +
                     new Date(player.lastOnline).toLocaleString(undefined, options) +
                     "</span>"}`;
-    row.cells[5].setAttribute("data-timestamp", player.lastOnline.toString());
-    row.cells[5].classList.add("last-online");
-    row.cells[6].innerHTML =
+    row.cells[6].setAttribute("data-timestamp", player.lastOnline.toString());
+    row.cells[6].classList.add("last-online");
+    row.cells[7].innerHTML =
         player.online === undefined
             ? "⌛"
             : `${player.online === true ? "✔️" : "❌"}`;
@@ -309,7 +315,7 @@ function renderPlayersData(players) {
                 row.insertCell();
                 row.setAttribute("id", `player-${player.id.toString()}`);
             }
-            row.cells[6].classList.add("hidden");
+            row.cells[7].classList.add("hidden");
         }
     }
     for (let playerId = 0; playerId < players.length; playerId++) {
@@ -362,16 +368,17 @@ function main() {
         $("#players").tablesorter({
             sortInitialOrder: "desc",
             sortList: [
-                [6, 0],
-                [3, 1],
+                [7, 0],
+                [4, 1],
             ],
             headers: {
                 0: { sorter: false, parser: false },
-                1: { sorter: "digit", sortInitialOrder: "asc" },
-                2: { sorter: "string", sortInitialOrder: "asc" },
-                3: { sorter: "string", sortInitialOrder: "desc" },
-                4: { sorter: false, parser: false },
-                5: { sorter: "rangesort" },
+                1: { sorter: "digit", sortInitialOrder: "desc" },
+                2: { sorter: "digit", sortInitialOrder: "asc" },
+                3: { sorter: "string", sortInitialOrder: "asc" },
+                4: { sorter: "string", sortInitialOrder: "desc" },
+                5: { sorter: false, parser: false },
+                6: { sorter: "rangesort" },
             },
         });
         yield loadAndRender();
