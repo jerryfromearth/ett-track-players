@@ -99,7 +99,7 @@ let players: Player[] = [];
 /**
  * Hardcoded max player count to avoid abusing server.
  */
-const maxPlayers = 100;
+const maxPlayers = 150;
 
 function updateCountdown(countdown: string) {
   let element = document.getElementById(

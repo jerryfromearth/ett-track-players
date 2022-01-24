@@ -82,7 +82,7 @@ class Player {
     }
 }
 let players = [];
-const maxPlayers = 100;
+const maxPlayers = 150;
 function updateCountdown(countdown) {
     let element = document.getElementById("countdown");
     element.innerHTML = countdown.toString();
