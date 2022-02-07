@@ -51,8 +51,6 @@ class Player {
             this.online = false;
             this.device = undefined;
         }
-        let usersInRoom = json.UsersInRooms.filter((userInRoom) => userInRoom.Id === this.id.toString());
-        console.log(`User ${this.name}(${this.id}) is ${usersInRoom.length == 0 ? "NOT" : ""} in room`);
         let rooms = json.Rooms.filter((room) => {
             let roomplayers = room.Players;
             for (let i = 0; i < roomplayers.length; i++) {
@@ -121,6 +119,7 @@ function loadPlayerList() {
             updateCountdown(`Error: Failed to fetch player list. Please either use "?ids=" parameter, or place a file called "players.json" in the source folder.\n${err}`);
             throw err;
         }
+        playerIds_tracked = [...new Set(playerIds_tracked)];
         for (let playerId of playerIds_tracked) {
             if (players.length < maxPlayers) {
                 let player = new Player({ data: { id: playerId.toString() } });

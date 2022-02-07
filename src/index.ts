@@ -57,14 +57,6 @@ class Player {
     }
 
     // Find out opponent
-    let usersInRoom = json.UsersInRooms.filter(
-      (userInRoom: any) => userInRoom.Id === this.id.toString()
-    );
-    console.log(
-      `User ${this.name}(${this.id}) is ${
-        usersInRoom.length == 0 ? "NOT" : ""
-      } in room`
-    );
 
     let rooms = json.Rooms.filter((room: any) => {
       let roomplayers = room.Players;
@@ -136,6 +128,7 @@ async function loadPlayerList() {
         playerIds_tracked.push(...json.playerIds);
       }
 
+      // To be removed
       window.history.replaceState(
         "object or string",
         "Title",
@@ -149,6 +142,9 @@ async function loadPlayerList() {
     );
     throw err;
   }
+
+  // De-duplicate
+  playerIds_tracked = [...new Set(playerIds_tracked)];
 
   for (let playerId of playerIds_tracked) {
     if (players.length < maxPlayers) {
