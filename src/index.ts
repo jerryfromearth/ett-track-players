@@ -127,13 +127,6 @@ async function loadPlayerList() {
         let json = await response.json();
         playerIds_tracked.push(...json.playerIds);
       }
-
-      // To be removed
-      window.history.replaceState(
-        "object or string",
-        "Title",
-        `?ids=${playerIds_tracked.join(",")}`
-      );
     }
   } catch (err) {
     console.error(err);

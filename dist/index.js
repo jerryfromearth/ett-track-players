@@ -111,7 +111,6 @@ function loadPlayerList() {
                     let json = yield response.json();
                     playerIds_tracked.push(...json.playerIds);
                 }
-                window.history.replaceState("object or string", "Title", `?ids=${playerIds_tracked.join(",")}`);
             }
         }
         catch (err) {
