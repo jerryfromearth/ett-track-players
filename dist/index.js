@@ -80,7 +80,7 @@ class Player {
     }
 }
 let players = [];
-const maxPlayers = 150;
+const maxPlayers = 200;
 function updateCountdown(countdown) {
     let element = document.getElementById("countdown");
     element.innerHTML = countdown.toString();
@@ -172,33 +172,37 @@ function loadPlayersData() {
             promises.push(fetch(`https://www.elevenvr.club/accounts/${id.toString()}`));
         }
         try {
-            let online_response = yield online_promise;
-            let json = yield online_response.json();
-            let playerIdsAsStrings = players.map((player) => player.id.toString());
-            json.OnlineUses = json.OnlineUses.filter((OnlineUse) => {
-                return playerIdsAsStrings.includes(OnlineUse.Id);
-            });
-            json.UsersInRooms = json.UsersInRooms.filter((UserInRoom) => {
-                return playerIdsAsStrings.includes(UserInRoom.Id);
-            });
-            json.Rooms = json.Rooms.filter((Room) => {
-                for (const playerIdAsString of playerIdsAsStrings) {
-                    if (Room.Players.map((RoomPlayer) => RoomPlayer.Id).includes(playerIdAsString)) {
-                        return true;
+            online_promise
+                .then((online_response) => {
+                return online_response.json();
+            })
+                .then((json) => {
+                let playerIdsAsStrings = players.map((player) => player.id.toString());
+                json.OnlineUses = json.OnlineUses.filter((OnlineUse) => {
+                    return playerIdsAsStrings.includes(OnlineUse.Id);
+                });
+                json.UsersInRooms = json.UsersInRooms.filter((UserInRoom) => {
+                    return playerIdsAsStrings.includes(UserInRoom.Id);
+                });
+                json.Rooms = json.Rooms.filter((Room) => {
+                    for (const playerIdAsString of playerIdsAsStrings) {
+                        if (Room.Players.map((RoomPlayer) => RoomPlayer.Id).includes(playerIdAsString)) {
+                            return true;
+                        }
                     }
+                    return false;
+                });
+                for (let id = 0; id < players.length; id++) {
+                    players[id].fillOnlineInfo(json);
+                    renderPlayerData(players[id]);
                 }
-                return false;
+                sortPlayersTable();
             });
-            for (let id = 0; id < players.length; id++) {
-                players[id].fillOnlineInfo(json);
-                renderPlayerData(players[id]);
-            }
         }
         catch (err) {
             console.error(err);
             updateCountdown(`Error: Failed to fetch live snapshot. ${err}`);
         }
-        sortPlayersTable();
         yield Promise.allSettled(promises.map((promise) => __awaiter(this, void 0, void 0, function* () {
             try {
                 let response = yield promise;
@@ -229,7 +233,6 @@ function renderPlayerData(player) {
         $(`tr#player-${player.id.toString()}`).addClass("online");
     });
     row.cells[0].innerHTML = `<a title="statistics" href="https://beta.11-stats.com/stats/${player.id}/statistics" target="_blank">📈</a><a style="display:none" class="matchupButton" href="#">⚔️</a><span class="matchupResult">&nbsp;</span>`;
-    row.cells[1].innerHTML = `⌛`;
     row.cells[1].classList.add("rank");
     row.cells[2].innerHTML = `<a href="https://www.elevenvr.net/eleven/${player.id}" target="_blank">${player.id}</a>`;
     row.cells[2].classList.add("id");
