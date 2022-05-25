@@ -80,7 +80,7 @@ class Player {
     }
 }
 let players = [];
-const maxPlayers = 200;
+const maxPlayers = 500;
 function updateCountdown(countdown) {
     let element = document.getElementById("countdown");
     element.innerHTML = countdown.toString();
@@ -155,6 +155,7 @@ function markCertainPlayers() {
         $(`#players tr#player-${player.id.toString()} td.rank`).html((rank + 1).toString());
     }
 }
+let firstTime = false;
 function loadPlayersData() {
     return __awaiter(this, void 0, void 0, function* () {
         let online_promise = new Promise(() => { });
@@ -168,8 +169,11 @@ function loadPlayersData() {
             console.error(`Unsupported protocol: ${window.location.protocol}`);
         }
         let promises = [];
-        for (const id of players.map((player) => player.id)) {
-            promises.push(fetch(`https://www.elevenvr.club/accounts/${id.toString()}`));
+        if (firstTime == false) {
+            for (const id of players.map((player) => player.id)) {
+                promises.push(fetch(`https://www.elevenvr.club/accounts/${id.toString()}`));
+                firstTime = true;
+            }
         }
         try {
             online_promise

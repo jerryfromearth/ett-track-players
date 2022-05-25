@@ -91,7 +91,7 @@ let players: Player[] = [];
 /**
  * Hardcoded max player count to avoid abusing server.
  */
-const maxPlayers = 200;
+const maxPlayers = 500;
 
 function updateCountdown(countdown: string) {
   let element = document.getElementById(
@@ -187,6 +187,7 @@ function markCertainPlayers() {
   }
 }
 
+let firstTime = false;
 async function loadPlayersData() {
   // Fetch online status snapshot
   let online_promise: Promise<Response> = new Promise<Response>(() => {});
@@ -206,8 +207,13 @@ async function loadPlayersData() {
 
   // Fetch each user's data (name, ELO, rank etc.)
   let promises: Promise<Response>[] = [];
-  for (const id of players.map((player) => player.id)) {
-    promises.push(fetch(`https://www.elevenvr.club/accounts/${id.toString()}`));
+  if (firstTime == false) {
+    for (const id of players.map((player) => player.id)) {
+      promises.push(
+        fetch(`https://www.elevenvr.club/accounts/${id.toString()}`)
+      );
+      firstTime = true;
+    }
   }
 
   // Fill in online status
