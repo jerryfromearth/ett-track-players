@@ -374,6 +374,7 @@ function main() {
             sortInitialOrder: "desc",
             sortList: [
                 [7, 0],
+                [1, 0],
                 [4, 1],
             ],
             headers: {
