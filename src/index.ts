@@ -205,15 +205,23 @@ async function loadPlayersData() {
     console.error(`Unsupported protocol: ${window.location.protocol}`);
   }
 
+  let delay = (min: number, max: number) => {
+    return new Promise((resolve) => {
+      setTimeout(resolve, Math.random() * (max - min) + min);
+    });
+  };
+
   // Fetch each user's data (name, ELO, rank etc.)
   let promises: Promise<Response>[] = [];
   if (firstTime == false) {
-    for (const id of players.map((player) => player.id)) {
+    for (const [i, id] of players.map((player) => player.id).entries()) {
       promises.push(
-        fetch(`https://www.elevenvr.club/accounts/${id.toString()}`)
+        delay(i * 100, i * 100).then(() => {
+          return fetch(`https://www.elevenvr.club/accounts/${id.toString()}`);
+        })
       );
-      firstTime = true;
     }
+    firstTime = true;
   }
 
   // Fill in online status

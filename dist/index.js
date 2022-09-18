@@ -168,12 +168,19 @@ function loadPlayersData() {
         else {
             console.error(`Unsupported protocol: ${window.location.protocol}`);
         }
+        let delay = (min, max) => {
+            return new Promise((resolve) => {
+                setTimeout(resolve, Math.random() * (max - min) + min);
+            });
+        };
         let promises = [];
         if (firstTime == false) {
-            for (const id of players.map((player) => player.id)) {
-                promises.push(fetch(`https://www.elevenvr.club/accounts/${id.toString()}`));
-                firstTime = true;
+            for (const [i, id] of players.map((player) => player.id).entries()) {
+                promises.push(delay(i * 100, i * 100).then(() => {
+                    return fetch(`https://www.elevenvr.club/accounts/${id.toString()}`);
+                }));
             }
+            firstTime = true;
         }
         try {
             online_promise
