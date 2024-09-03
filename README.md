@@ -15,7 +15,7 @@ There are two ways to use it.
 
 If you have a web server, please download the code (https://github.com/jerryfromearth/ett-track-players/archive/refs/heads/main.zip), edit `players.json` and upload the folder to your website.
 
-If you don't have a web server, welcome to just share with my humble server. You can customize the link to include the player IDs you want to track. For example, http://ett.jerryhong.net/?ids=4008,4009 would track the players with id 4008 and 4009. (Player IDs can be found on https://www.elevenvr.net/)
+If you don't have a web server, welcome to just use my github page. You can customize the link to include the player IDs you want to track. For example, https://jerryfromearth.github.io/ett-track-players/?ids=4008,4009 would track the players with id 4008 and 4009. (Player IDs can be found on https://www.elevenvr.net/)
 
 ## To develop
 
