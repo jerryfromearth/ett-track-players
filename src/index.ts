@@ -217,7 +217,7 @@ async function loadPlayersData() {
     for (const [i, id] of players.map((player) => player.id).entries()) {
       promises.push(
         delay(i * 100, i * 100).then(() => {
-          return fetch(`https://www.elevenvr.club/accounts/${id.toString()}`);
+          return fetch(`https://api3.elevenvr.com/accounts/${id.toString()}?api-key=gyghufjiuhrgy783ru293ihur8gy`);
         })
       );
     }
