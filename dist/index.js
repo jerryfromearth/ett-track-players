@@ -177,7 +177,7 @@ function loadPlayersData() {
         if (firstTime == false) {
             for (const [i, id] of players.map((player) => player.id).entries()) {
                 promises.push(delay(i * 100, i * 100).then(() => {
-                    return fetch(`https://www.elevenvr.club/accounts/${id.toString()}`);
+                    return fetch(`https://api3.elevenvr.com/accounts/${id.toString()}?api-key=hi023g9e8y7byvguhij2r0geb98y7urh`);
                 }));
             }
             firstTime = true;
@@ -243,7 +243,7 @@ function renderPlayerData(player) {
     $(document).on("click", `tr#player-${player.id.toString()} .matchupButton`, function () {
         $(`tr#player-${player.id.toString()}`).addClass("online");
     });
-    row.cells[0].innerHTML = `<a title="statistics" href="https://11-stats.com/stats/${player.id}/statistics" target="_blank">📈</a><a style="display:none" class="matchupButton" href="#">⚔️</a><span class="matchupResult">&nbsp;</span>`;
+    row.cells[0].innerHTML = `<a title="11ClubHouse" href="https://11clubhouse.com/${player.id}/" target="_blank">🏓</a><a style="display:none" class="matchupButton" href="#">⚔️</a><span class="matchupResult">&nbsp;</span>`;
     row.cells[1].classList.add("rank");
     row.cells[2].innerHTML = `<a href="https://www.elevenvr.net/eleven/${player.id}" target="_blank">${player.id}</a>`;
     row.cells[2].classList.add("id");
