@@ -220,7 +220,7 @@ async function loadPlayersData() {
       promises.push(
         delay(i * 100, i * 100).then(() => {
           return fetch(
-            `https://api3.elevenvr.com/accounts/${id.toString()}?api-key=hi023g9e8y7byvguhij2r0geb98y7urh`
+            `https://api3.elevenvr.com/accounts/${id.toString()}?api-key=gyghufjiuhrgy783ru293ihur8gy`
           );
         })
       );
