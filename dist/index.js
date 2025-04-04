@@ -89,11 +89,12 @@ function updateInfo(info) {
     let element = document.getElementById("info");
     element.innerHTML = info.toString();
 }
+let playerIds_tracked = [];
 function loadPlayerList() {
     var _a;
     return __awaiter(this, void 0, void 0, function* () {
         players = [];
-        let playerIds_tracked = [];
+        playerIds_tracked = [];
         try {
             if (DEBUG) {
                 playerIds_tracked = [648979, 143648, 104494, 632891, 42092];
@@ -227,6 +228,15 @@ function loadPlayersData() {
                 updateCountdown(`Error: Failed to fetch player info. ${err}`);
             }
         })));
+        const sixMonthsAgo = new Date();
+        sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
+        const sixMonthsAgoTimestamp = sixMonthsAgo.getTime();
+        const inactivePlayerIds = players
+            .filter((player) => player.lastOnline && player.lastOnline < sixMonthsAgoTimestamp)
+            .map((player) => player.id);
+        console.log("Player IDs last online more than 6 months ago:", inactivePlayerIds);
+        const activeTrackedPlayerIds = playerIds_tracked.filter((id) => !inactivePlayerIds.includes(id));
+        console.log("Tracked Player IDs active within the last 6 months:", activeTrackedPlayerIds);
         markCertainPlayers();
         sortPlayersTable();
     });

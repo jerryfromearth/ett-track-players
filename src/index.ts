@@ -104,10 +104,12 @@ function updateInfo(info: string) {
   element.innerHTML = info.toString();
 }
 
+let playerIds_tracked: number[] = []; // Moved declaration here
+
 async function loadPlayerList() {
   players = [];
 
-  let playerIds_tracked = [];
+  playerIds_tracked = []; // Assign to the outer scope variable
   try {
     if (DEBUG) {
       playerIds_tracked = [648979, 143648, 104494, 632891, 42092];
@@ -282,6 +284,31 @@ async function loadPlayersData() {
         updateCountdown(`Error: Failed to fetch player info. ${err}`);
       }
     })
+  );
+
+  // Log players inactive for more than 6 months
+  const sixMonthsAgo = new Date();
+  sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
+  const sixMonthsAgoTimestamp = sixMonthsAgo.getTime();
+
+  const inactivePlayerIds = players
+    .filter(
+      (player) => player.lastOnline && player.lastOnline < sixMonthsAgoTimestamp
+    )
+    .map((player) => player.id);
+
+  console.log(
+    "Player IDs last online more than 6 months ago:",
+    inactivePlayerIds
+  );
+
+  // Log tracked players who WERE active in the last 6 months
+  const activeTrackedPlayerIds = playerIds_tracked.filter(
+    (id) => !inactivePlayerIds.includes(id)
+  );
+  console.log(
+    "Tracked Player IDs active within the last 6 months:",
+    activeTrackedPlayerIds
   );
 
   // Mark certain players
